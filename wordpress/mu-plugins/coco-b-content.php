@@ -8,5 +8,5 @@
  *
  * Pendiente: registrar los Custom Post Types (Villa, Retiro, Paquete,
  * Testimonio, FAQ) y sus campos personalizados, según la especificación
- * de contenido (DISC-02) — todavía no definida.
+ * de contenido en docs/content-model.md.
  */
