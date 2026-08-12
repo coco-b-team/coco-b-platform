@@ -1,0 +1,216 @@
+import { WORDPRESS_API_URL } from './config';
+import { decodeHtmlEntities } from './utils';
+import type {
+  Villa,
+  Retreat,
+  Package,
+  Testimonial,
+  Faq,
+  WPPost,
+  WPVillaAcf,
+  WPRetreatAcf,
+  WPPackageAcf,
+  WPTestimonialAcf,
+  WPFaqAcf,
+} from './types';
+
+async function wpFetch<T>(path: string): Promise<T | null> {
+  try {
+    const res = await fetch(`${WORDPRESS_API_URL}${path}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) {
+      console.error(`[wp] ${path} respondió ${res.status}`);
+      return null;
+    }
+    return (await res.json()) as T;
+  } catch (error) {
+    console.error(`[wp] no se pudo conectar a WordPress (${path})`, error);
+    return null;
+  }
+}
+
+async function resolveMediaUrl(id: number | null): Promise<string | null> {
+  if (!id) return null;
+  const media = await wpFetch<{ source_url: string }>(`/wp/v2/media/${id}`);
+  return media?.source_url ?? null;
+}
+
+function toNumberOrNull(value: number | string | undefined): number | null {
+  if (value === undefined || value === '') return null;
+  const n = Number(value);
+  return Number.isNaN(n) ? null : n;
+}
+
+function title(post: WPPost<unknown>): string {
+  return decodeHtmlEntities(post.title.rendered);
+}
+
+async function mapVilla(post: WPPost<WPVillaAcf>): Promise<Villa> {
+  const acf = post.acf;
+  const galleryIds = [
+    acf.gallery_image_1,
+    acf.gallery_image_2,
+    acf.gallery_image_3,
+    acf.gallery_image_4,
+    acf.gallery_image_5,
+  ].filter((id): id is number => Boolean(id));
+
+  const [mainImage, gallery] = await Promise.all([
+    resolveMediaUrl(acf.main_image),
+    Promise.all(galleryIds.map(resolveMediaUrl)),
+  ]);
+
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: title(post),
+    label: acf.label ?? '',
+    shortDescription: acf.short_description ?? '',
+    longDescription: acf.long_description ?? '',
+    mainImage,
+    gallery: gallery.filter((url): url is string => Boolean(url)),
+    suiteCapacity: toNumberOrNull(acf.suite_capacity),
+    guestCapacity: toNumberOrNull(acf.guest_capacity),
+    bedrooms: toNumberOrNull(acf.bedrooms),
+    bathrooms: toNumberOrNull(acf.bathrooms),
+    minimumStayNights: toNumberOrNull(acf.minimum_stay_nights),
+    location: acf.location ?? '',
+    useCases: acf.use_cases ?? [],
+    startingPrice: toNumberOrNull(acf.starting_price),
+    currency: acf.currency ?? 'USD',
+    priceUnit: acf.price_unit ?? '',
+    priceOnRequest: Boolean(acf.price_on_request),
+    primaryCtaLabel: acf.primary_cta_label ?? '',
+    primaryCtaUrl: acf.primary_cta_url ?? '',
+    sortOrder: toNumberOrNull(acf.sort_order) ?? 0,
+    showOnLanding: Boolean(acf.show_on_landing),
+  };
+}
+
+async function mapRetreat(post: WPPost<WPRetreatAcf>): Promise<Retreat> {
+  const acf = post.acf;
+  const mainImage = await resolveMediaUrl(acf.main_image);
+
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: title(post),
+    category: acf.retreat_category ?? '',
+    shortDescription: acf.short_description ?? '',
+    longDescription: acf.long_description ?? '',
+    mainImage,
+    startDate: acf.start_date ?? null,
+    endDate: acf.end_date ?? null,
+    durationNights: toNumberOrNull(acf.duration_nights),
+    maximumCapacity: toNumberOrNull(acf.maximum_capacity),
+    minimumCapacity: toNumberOrNull(acf.minimum_capacity),
+    level: acf.level ?? false,
+    hostName: acf.host_name ?? '',
+    startingPrice: toNumberOrNull(acf.starting_price),
+    currency: acf.currency ?? 'USD',
+    availabilityStatus: acf.availability_status ?? '',
+    primaryCtaLabel: acf.primary_cta_label ?? '',
+    primaryCtaUrl: acf.primary_cta_url ?? '',
+    sortOrder: toNumberOrNull(acf.sort_order) ?? 0,
+    showOnLanding: Boolean(acf.show_on_landing),
+  };
+}
+
+async function mapPackage(post: WPPost<WPPackageAcf>): Promise<Package> {
+  const acf = post.acf;
+  const mainImage = await resolveMediaUrl(acf.main_image);
+
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: title(post),
+    packageType: acf.package_type ?? '',
+    shortDescription: acf.short_description ?? '',
+    longDescription: acf.long_description ?? '',
+    mainImage,
+    totalSuiteCapacity: toNumberOrNull(acf.total_suite_capacity),
+    guestCapacity: toNumberOrNull(acf.guest_capacity),
+    startingPrice: toNumberOrNull(acf.starting_price),
+    currency: acf.currency ?? 'USD',
+    discountLabel: acf.discount_label ?? '',
+    primaryCtaLabel: acf.primary_cta_label ?? '',
+    primaryCtaUrl: acf.primary_cta_url ?? '',
+    sortOrder: toNumberOrNull(acf.sort_order) ?? 0,
+    showOnLanding: Boolean(acf.show_on_landing),
+  };
+}
+
+async function mapTestimonial(post: WPPost<WPTestimonialAcf>): Promise<Testimonial> {
+  const acf = post.acf;
+  const authorImage = await resolveMediaUrl(acf.author_image);
+
+  return {
+    id: post.id,
+    quote: acf.quote ?? '',
+    authorDetail: acf.author_detail ?? '',
+    authorImage,
+    testimonialType: acf.testimonial_type ?? '',
+    rating: toNumberOrNull(acf.rating),
+    isFeatured: Boolean(acf.is_featured),
+    sortOrder: toNumberOrNull(acf.sort_order) ?? 0,
+  };
+}
+
+function mapFaq(post: WPPost<WPFaqAcf>): Faq {
+  const acf = post.acf;
+  return {
+    id: post.id,
+    question: title(post),
+    answer: acf.answer ?? '',
+    category: acf.faq_category ?? '',
+    showOnLanding: Boolean(acf.show_on_landing),
+    sortOrder: toNumberOrNull(acf.sort_order) ?? 0,
+  };
+}
+
+function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
+  return [...items].sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export async function getVillas(): Promise<Villa[]> {
+  const posts = await wpFetch<WPPost<WPVillaAcf>[]>('/wp/v2/villa?per_page=100');
+  if (!posts) return [];
+  return bySortOrder(await Promise.all(posts.map(mapVilla)));
+}
+
+export async function getVilla(slug: string): Promise<Villa | null> {
+  const posts = await wpFetch<WPPost<WPVillaAcf>[]>(`/wp/v2/villa?slug=${slug}`);
+  if (!posts || posts.length === 0) return null;
+  return mapVilla(posts[0]);
+}
+
+export async function getRetreats(): Promise<Retreat[]> {
+  const posts = await wpFetch<WPPost<WPRetreatAcf>[]>('/wp/v2/retreat?per_page=100');
+  if (!posts) return [];
+  return bySortOrder(await Promise.all(posts.map(mapRetreat)));
+}
+
+export async function getRetreat(slug: string): Promise<Retreat | null> {
+  const posts = await wpFetch<WPPost<WPRetreatAcf>[]>(`/wp/v2/retreat?slug=${slug}`);
+  if (!posts || posts.length === 0) return null;
+  return mapRetreat(posts[0]);
+}
+
+export async function getPackages(): Promise<Package[]> {
+  const posts = await wpFetch<WPPost<WPPackageAcf>[]>('/wp/v2/package?per_page=100');
+  if (!posts) return [];
+  return bySortOrder(await Promise.all(posts.map(mapPackage)));
+}
+
+export async function getTestimonials(): Promise<Testimonial[]> {
+  const posts = await wpFetch<WPPost<WPTestimonialAcf>[]>('/wp/v2/testimonial?per_page=100');
+  if (!posts) return [];
+  return bySortOrder(await Promise.all(posts.map(mapTestimonial)));
+}
+
+export async function getFaqs(): Promise<Faq[]> {
+  const posts = await wpFetch<WPPost<WPFaqAcf>[]>('/wp/v2/faq?per_page=100');
+  if (!posts) return [];
+  return bySortOrder(posts.map(mapFaq));
+}
