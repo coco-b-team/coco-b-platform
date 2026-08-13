@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import { FaCommentDots, FaXmark, FaPaperPlane } from 'react-icons/fa6';
 import { ChatMessageBubble, type ChatRole } from './ChatMessageBubble';
 import { QuickReplies } from './QuickReplies';
 import { VillaResultCard } from './VillaResultCard';
+import { Logo } from '@/components/ui/Logo';
 import type { Villa } from '@/lib/wp/types';
 
 type Message = { role: ChatRole; content: string; villa?: Villa };
@@ -173,7 +173,7 @@ export function ChatWidget() {
         <div className="fixed inset-0 z-50 flex flex-col bg-background sm:inset-auto sm:right-6 sm:bottom-6 sm:h-[600px] sm:max-h-[80vh] sm:w-[380px] sm:rounded-xl sm:border sm:border-border sm:shadow-xl">
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <div className="flex items-center gap-2">
-              <Image src="/logo.svg" alt="" width={20} height={20} className="h-5 w-auto" />
+              <Logo alt="" width={20} height={20} className="h-5 w-auto" />
               <p className="font-semibold">Coco B Concierge</p>
             </div>
             <button

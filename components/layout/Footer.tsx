@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa6';
+import { Logo } from '@/components/ui/Logo';
 
 const contactBlocks = [
   { title: 'Villa Groups', email: 'jeffrey@cocobisla.com', phone: '+1 206 579 0798' },
@@ -19,7 +19,7 @@ export function Footer() {
   return (
     <footer className="w-full bg-text py-16 text-background">
       <div className="mx-auto max-w-6xl px-6">
-        <Image src="/logo-white.svg" alt="Coco B Isla" width={177} height={14} className="mb-12 h-auto w-44" />
+        <Logo variant="white" width={177} height={14} className="mb-12 h-auto w-44" />
 
         <div className="grid gap-10 sm:grid-cols-3">
           {contactBlocks.map((block) => (
