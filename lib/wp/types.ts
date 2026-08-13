@@ -109,6 +109,34 @@ export type Faq = {
   sortOrder: number;
 };
 
+export type Service = {
+  id: number;
+  label: string;
+  icon: string;
+  sortOrder: number;
+};
+
+export type Contact = {
+  id: number;
+  title: string;
+  email: string;
+  phone: string;
+  sortOrder: number;
+};
+
+export type Hero = {
+  image: string | null;
+  imageAlt: string;
+  eyebrow: string;
+  heading: string;
+};
+
+export type SiteLocation = {
+  heading: string;
+  description: string;
+  mapUrl: string;
+};
+
 // Formas crudas tal como las devuelve la REST API de WordPress — solo lo
 // que se usa para mapear a los tipos normalizados de arriba.
 
@@ -200,4 +228,29 @@ export type WPFaqAcf = {
   faq_category: string;
   show_on_landing: boolean;
   sort_order: number | string;
+};
+
+export type WPServiceAcf = {
+  service_icon: string;
+  sort_order: number | string;
+};
+
+export type WPContactAcf = {
+  contact_title: string;
+  contact_email: string;
+  contact_phone: string;
+  sort_order: number | string;
+};
+
+export type WPHeroAcf = {
+  hero_image: number | null;
+  hero_image_alt: string;
+  hero_eyebrow: string;
+  hero_heading: string;
+};
+
+export type WPLocationAcf = {
+  location_heading: string;
+  location_description: string;
+  location_map_url: string;
 };

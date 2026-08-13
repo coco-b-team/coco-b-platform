@@ -1,11 +1,15 @@
 import Link from 'next/link';
 import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa6';
 import { Logo } from '@/components/ui/Logo';
+import { getContacts } from '@/lib/wp/client';
+import type { Contact } from '@/lib/wp/types';
 
-const contactBlocks = [
-  { title: 'Villa Groups', email: 'jeffrey@cocobisla.com', phone: '+1 206 579 0798' },
-  { title: 'Reservations', email: 'reservations@cocobisla.com', phone: '+52 998 315 4343' },
-  { title: 'Concierge', email: '7 a.m. to 11 p.m. Central', phone: '+52 998 209 6937' },
+// Respaldo por si WordPress no responde o todavía no tiene contactos
+// cargados — mismo contenido que estaba fijo en el código antes.
+const FALLBACK_CONTACTS: Contact[] = [
+  { id: -1, title: 'Villa Groups', email: 'jeffrey@cocobisla.com', phone: '+1 206 579 0798', sortOrder: 1 },
+  { id: -2, title: 'Reservations', email: 'reservations@cocobisla.com', phone: '+52 998 315 4343', sortOrder: 2 },
+  { id: -3, title: 'Concierge', email: '7 a.m. to 11 p.m. Central', phone: '+52 998 209 6937', sortOrder: 3 },
 ];
 
 const socialLinks = [
@@ -15,7 +19,10 @@ const socialLinks = [
   { href: 'https://tiktok.com', label: 'TikTok', Icon: FaTiktok },
 ];
 
-export function Footer() {
+export async function Footer() {
+  const fetched = await getContacts();
+  const contactBlocks = fetched.length > 0 ? fetched : FALLBACK_CONTACTS;
+
   return (
     <footer className="w-full bg-text py-16 text-background">
       <div className="mx-auto max-w-6xl px-6">
@@ -23,7 +30,7 @@ export function Footer() {
 
         <div className="grid gap-10 sm:grid-cols-3">
           {contactBlocks.map((block) => (
-            <div key={block.title}>
+            <div key={block.id}>
               <p className="text-sm font-semibold tracking-widest text-accent uppercase">{block.title}</p>
               <p className="mt-3 text-text-muted">{block.email}</p>
               <p className="mt-1 text-text-muted">{block.phone}</p>

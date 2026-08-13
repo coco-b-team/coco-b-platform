@@ -7,12 +7,20 @@ import type {
   Package,
   Testimonial,
   Faq,
+  Service,
+  Contact,
+  Hero,
+  SiteLocation,
   WPPost,
   WPVillaAcf,
   WPRetreatAcf,
   WPPackageAcf,
   WPTestimonialAcf,
   WPFaqAcf,
+  WPServiceAcf,
+  WPContactAcf,
+  WPHeroAcf,
+  WPLocationAcf,
 } from './types';
 
 async function wpFetch<T>(path: string): Promise<T | null> {
@@ -180,6 +188,46 @@ function mapFaq(post: WPPost<WPFaqAcf>): Faq {
   };
 }
 
+function mapService(post: WPPost<WPServiceAcf>): Service {
+  const acf = post.acf;
+  return {
+    id: post.id,
+    label: title(post),
+    icon: acf.service_icon ?? '',
+    sortOrder: toNumberOrNull(acf.sort_order) ?? 0,
+  };
+}
+
+function mapContact(post: WPPost<WPContactAcf>): Contact {
+  const acf = post.acf;
+  return {
+    id: post.id,
+    title: acf.contact_title ?? title(post),
+    email: acf.contact_email ?? '',
+    phone: acf.contact_phone ?? '',
+    sortOrder: toNumberOrNull(acf.sort_order) ?? 0,
+  };
+}
+
+// Contenido de arriba del pliegue (Hero, Ubicación) — a diferencia de las
+// villas o paquetes, no tiene sentido mostrar la sección vacía si
+// WordPress no responde o el campo todavía no se cargó. Estos valores por
+// defecto son el mismo texto que estaba fijo en el código antes de
+// conectar con WordPress.
+const DEFAULT_HERO: Hero = {
+  image: '/hero-villa.jpg',
+  imageAlt: 'Piscina infinita frente al mar en una villa de Coco B Isla',
+  eyebrow: 'A Luxury Experience',
+  heading: 'In Isla Mujeres',
+};
+
+const DEFAULT_LOCATION: SiteLocation = {
+  heading: 'A Privileged Location',
+  description:
+    "Just a 20 minute ride off the coast of Cancun, you'll find Isla Mujeres, the island of women, floating in the turquoise blue waters of the Caribbean. The privileged location of Coco B Isla Villas lets you enjoy an oasis like escape from the hustle and bustle of city life, yet be just minutes away from the beach and family experiences.",
+  mapUrl: 'https://www.google.com/maps?q=Isla+Mujeres,+Quintana+Roo,+Mexico&output=embed',
+};
+
 function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => a.sortOrder - b.sortOrder);
 }
@@ -246,4 +294,42 @@ export async function getFaqs(): Promise<Faq[]> {
   const posts = await wpFetch<WPPost<WPFaqAcf>[]>('/wp/v2/faq?per_page=100');
   if (!posts) return [];
   return bySortOrder(posts.map(mapFaq));
+}
+
+export async function getServices(): Promise<Service[]> {
+  const posts = await wpFetch<WPPost<WPServiceAcf>[]>('/wp/v2/servicio?per_page=100');
+  if (!posts || posts.length === 0) return [];
+  return bySortOrder(posts.map(mapService));
+}
+
+export async function getContacts(): Promise<Contact[]> {
+  const posts = await wpFetch<WPPost<WPContactAcf>[]>('/wp/v2/contacto?per_page=100');
+  if (!posts || posts.length === 0) return [];
+  return bySortOrder(posts.map(mapContact));
+}
+
+export async function getHero(): Promise<Hero> {
+  const posts = await wpFetch<WPPost<WPHeroAcf>[]>('/wp/v2/hero?per_page=1');
+  const acf = posts?.[0]?.acf;
+  if (!acf) return DEFAULT_HERO;
+
+  const image = await resolveMediaUrl(acf.hero_image);
+  return {
+    image: image ?? DEFAULT_HERO.image,
+    imageAlt: acf.hero_image_alt || DEFAULT_HERO.imageAlt,
+    eyebrow: acf.hero_eyebrow || DEFAULT_HERO.eyebrow,
+    heading: acf.hero_heading || DEFAULT_HERO.heading,
+  };
+}
+
+export async function getSiteLocation(): Promise<SiteLocation> {
+  const posts = await wpFetch<WPPost<WPLocationAcf>[]>('/wp/v2/ubicacion?per_page=1');
+  const acf = posts?.[0]?.acf;
+  if (!acf) return DEFAULT_LOCATION;
+
+  return {
+    heading: acf.location_heading || DEFAULT_LOCATION.heading,
+    description: acf.location_description || DEFAULT_LOCATION.description,
+    mapUrl: acf.location_map_url || DEFAULT_LOCATION.mapUrl,
+  };
 }

@@ -1,22 +1,19 @@
 import { FaLocationDot } from 'react-icons/fa6';
+import { getSiteLocation } from '@/lib/wp/client';
 
-export function Location() {
+export async function Location() {
+  const location = await getSiteLocation();
+
   return (
     <section className="bg-background-alt py-16">
       <div className="mx-auto max-w-6xl px-6 sm:px-10">
-        <h2 className="font-body text-2xl font-normal">A Privileged Location</h2>
-        <p className="mt-4 max-w-2xl text-text-muted">
-          Just a 20 minute ride off the coast of Cancun, you&apos;ll find Isla Mujeres, the
-          island of women, floating in the turquoise blue waters of the Caribbean. The
-          privileged location of Coco B Isla Villas lets you enjoy an oasis like escape from the
-          hustle and bustle of city life, yet be just minutes away from the beach and family
-          experiences.
-        </p>
+        <h2 className="font-body text-2xl font-normal">{location.heading}</h2>
+        <p className="mt-4 max-w-2xl text-text-muted">{location.description}</p>
 
         <div className="mt-8 overflow-hidden rounded-xl border border-border">
           <iframe
             title="Ubicación de Coco B Isla Villas"
-            src="https://www.google.com/maps?q=Isla+Mujeres,+Quintana+Roo,+Mexico&output=embed"
+            src={location.mapUrl}
             width="100%"
             height="400"
             style={{ border: 0 }}
