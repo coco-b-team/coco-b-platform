@@ -309,7 +309,11 @@ export async function getContacts(): Promise<Contact[]> {
 }
 
 export async function getHero(): Promise<Hero> {
-  const posts = await wpFetch<WPPost<WPHeroAcf>[]>('/wp/v2/hero?per_page=1');
+  // "hero" está pensado como una sola entrada, pero nada en WordPress lo
+  // impide técnicamente — orderby=id&order=asc asegura que, si alguna vez
+  // se crea una segunda por error, siempre gane la original (la más
+  // antigua) en vez de una al azar según el orden por defecto de la API.
+  const posts = await wpFetch<WPPost<WPHeroAcf>[]>('/wp/v2/hero?per_page=1&orderby=id&order=asc');
   const acf = posts?.[0]?.acf;
   if (!acf) return DEFAULT_HERO;
 
@@ -323,7 +327,9 @@ export async function getHero(): Promise<Hero> {
 }
 
 export async function getSiteLocation(): Promise<SiteLocation> {
-  const posts = await wpFetch<WPPost<WPLocationAcf>[]>('/wp/v2/ubicacion?per_page=1');
+  // Mismo motivo que en getHero(): orden explícito para que una segunda
+  // entrada creada por error no gane por casualidad.
+  const posts = await wpFetch<WPPost<WPLocationAcf>[]>('/wp/v2/ubicacion?per_page=1&orderby=id&order=asc');
   const acf = posts?.[0]?.acf;
   if (!acf) return DEFAULT_LOCATION;
 
