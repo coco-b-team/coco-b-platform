@@ -19,6 +19,21 @@ const PER_IP_LIMIT_REPLY =
 const GLOBAL_LIMIT_REPLY =
   'Tengo bastante gente conmigo en este momento. Dame un respiro, ya regreso — intenta de nuevo en un minuto.';
 
+// El system prompt es el mismo para todos los usuarios — se arma una vez y
+// se reusa por unos minutos en vez de reconstruirlo en cada mensaje.
+const SYSTEM_PROMPT_TTL_MS = 5 * 60 * 1000;
+let cachedSystemPrompt: { value: string; expiresAt: number } | null = null;
+
+async function getSystemPrompt(): Promise<string> {
+  if (cachedSystemPrompt && cachedSystemPrompt.expiresAt > Date.now()) {
+    return cachedSystemPrompt.value;
+  }
+  const villas = await getVillaSummaries();
+  const value = buildSystemPrompt(villas);
+  cachedSystemPrompt = { value, expiresAt: Date.now() + SYSTEM_PROMPT_TTL_MS };
+  return value;
+}
+
 export async function POST(req: NextRequest) {
   if (!isSameOrigin(req)) {
     return NextResponse.json({ error: 'Origen no permitido.' }, { status: 403 });
@@ -27,7 +42,7 @@ export async function POST(req: NextRequest) {
   const clientKey = getClientKey(req);
   if (await isRateLimited(SCOPE, clientKey)) {
     console.warn(`[chat] límite por persona alcanzado (${clientKey})`);
-    return NextResponse.json({ reply: PER_IP_LIMIT_REPLY });
+    return NextResponse.json({ reply: PER_IP_LIMIT_REPLY }, { status: 429 });
   }
 
   let body: { messages?: ChatMessage[] };
@@ -59,12 +74,11 @@ export async function POST(req: NextRequest) {
   // solo de un abuso puntual de una sola persona.
   if (await isGlobalRateLimited(SCOPE)) {
     console.warn('[chat] límite del sitio entero alcanzado');
-    return NextResponse.json({ reply: GLOBAL_LIMIT_REPLY });
+    return NextResponse.json({ reply: GLOBAL_LIMIT_REPLY }, { status: 429 });
   }
 
   try {
-    const villas = await getVillaSummaries();
-    const systemInstruction = buildSystemPrompt(villas);
+    const systemInstruction = await getSystemPrompt();
     const reply = await generateChatReply(systemInstruction, trimmedHistory);
     return NextResponse.json({ reply });
   } catch (error) {

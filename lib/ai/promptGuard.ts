@@ -15,7 +15,6 @@ const SUSPICIOUS_PATTERNS = [
   /reveal.{0,25}(system\s*prompt|instructions|configuration)/i,
   /pretend\s+(you\s+are|to\s+be)/i,
   /you\s+are\s+now\s+a/i,
-  /system\s*prompt/i,
 ];
 
 export function looksLikeInjectionAttempt(message: string): boolean {

@@ -58,8 +58,13 @@ export function ChatWidget() {
         body: JSON.stringify({ messages: history.map(({ role, content }) => ({ role, content })) }),
       });
       const data = await res.json();
+      // Los límites de uso (429) igual vienen con un "reply" en tono de
+      // concierge — se muestran como mensaje normal, no como error.
+      if (data.reply) {
+        setMessages([...history, { role: 'model', content: data.reply }]);
+        return;
+      }
       if (!res.ok) throw new Error(data.error || 'Error desconocido');
-      setMessages([...history, { role: 'model', content: data.reply }]);
     } catch {
       setError('No pudimos responder en este momento. Intenta de nuevo en un rato.');
     } finally {

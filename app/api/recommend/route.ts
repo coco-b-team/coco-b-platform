@@ -23,7 +23,7 @@ function scoreVilla(villa: Villa, groupSize: number, interest: string): number {
   }
   score -= Math.abs(capacity - groupSize) * 0.3;
 
-  if (villa.useCases.includes(interest)) {
+  if (villa.useCases?.includes(interest)) {
     score += 15;
   }
 
