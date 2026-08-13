@@ -29,6 +29,23 @@ export type Villa = {
   showOnLanding: boolean;
 };
 
+// Versión liviana de Villa, solo texto — sin resolver imágenes. Pensada
+// para contextos donde no hace falta mostrar fotos (por ejemplo, el
+// system prompt del chat), para no pagar el costo de varias consultas de
+// medios por villa cuando esos datos ni se van a usar.
+export type VillaSummary = {
+  title: string;
+  guestCapacity: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  location: string;
+  startingPrice: number | null;
+  currency: string;
+  priceUnit: string;
+  priceOnRequest: boolean;
+  shortDescription: string;
+};
+
 export type Retreat = {
   id: number;
   slug: string;

@@ -2,6 +2,7 @@ import { WORDPRESS_API_URL } from './config';
 import { decodeHtmlEntities } from './utils';
 import type {
   Villa,
+  VillaSummary,
   Retreat,
   Package,
   Testimonial,
@@ -193,6 +194,28 @@ export async function getVilla(slug: string): Promise<Villa | null> {
   const posts = await wpFetch<WPPost<WPVillaAcf>[]>(`/wp/v2/villa?slug=${encodeURIComponent(slug)}`);
   if (!posts || posts.length === 0) return null;
   return mapVilla(posts[0]);
+}
+
+export async function getVillaSummaries(): Promise<VillaSummary[]> {
+  const posts = await wpFetch<WPPost<WPVillaAcf>[]>('/wp/v2/villa?per_page=100');
+  if (!posts) return [];
+  return [...posts]
+    .sort((a, b) => (toNumberOrNull(a.acf.sort_order) ?? 0) - (toNumberOrNull(b.acf.sort_order) ?? 0))
+    .map((post) => {
+      const acf = post.acf;
+      return {
+        title: title(post),
+        guestCapacity: toNumberOrNull(acf.guest_capacity),
+        bedrooms: toNumberOrNull(acf.bedrooms),
+        bathrooms: toNumberOrNull(acf.bathrooms),
+        location: acf.location ?? '',
+        startingPrice: toNumberOrNull(acf.starting_price),
+        currency: acf.currency ?? 'USD',
+        priceUnit: acf.price_unit ?? '',
+        priceOnRequest: Boolean(acf.price_on_request),
+        shortDescription: acf.short_description ?? '',
+      };
+    });
 }
 
 export async function getRetreats(): Promise<Retreat[]> {
