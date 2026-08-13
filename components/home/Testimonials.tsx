@@ -32,11 +32,17 @@ export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) 
           <div className="flex-1 rounded-xl border border-border bg-background p-8">
             <p className="text-lg font-semibold">{current.authorDetail}</p>
             <p className="mt-6 text-lg">&quot;{current.quote}&quot;</p>
-            <div className="mt-6 flex gap-1 text-primary">
-              {Array.from({ length: 5 }).map((_, i) =>
-                i < rating ? <FaStar key={i} size={20} /> : <FaRegStar key={i} size={20} />,
-              )}
-            </div>
+            {rating > 0 && (
+              <div
+                className="mt-6 flex gap-1 text-primary"
+                role="img"
+                aria-label={`Calificación: ${rating} de 5 estrellas`}
+              >
+                {Array.from({ length: 5 }).map((_, i) =>
+                  i < rating ? <FaStar key={i} size={20} aria-hidden="true" /> : <FaRegStar key={i} size={20} aria-hidden="true" />,
+                )}
+              </div>
+            )}
           </div>
 
           <button

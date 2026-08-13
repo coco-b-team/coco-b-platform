@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import type { Villa } from '@/lib/wp/types';
@@ -52,9 +51,9 @@ export function VillaCard({ villa }: { villa: Villa }) {
         <p className="font-semibold">{formatPrice(villa)}</p>
 
         <div className="mt-auto flex gap-3 pt-2">
-          <Link href={`/villas/${villa.slug}`}>
-            <Button variant="secondary">Read More</Button>
-          </Link>
+          <Button href={`/villas/${villa.slug}`} variant="secondary">
+            Read More
+          </Button>
           <Button variant="primary">Inquire</Button>
         </div>
       </div>

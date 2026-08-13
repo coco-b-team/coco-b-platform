@@ -10,7 +10,7 @@ const NAMED_ENTITIES: Record<string, string> = {
 // in practice (accents, quotes, dashes) instead of pulling in a full HTML parser.
 export function decodeHtmlEntities(value: string): string {
   return value
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCodePoint(parseInt(code, 16)))
     .replace(/&(amp|quot|apos|lt|gt);/g, (_, name) => NAMED_ENTITIES[name]);
 }

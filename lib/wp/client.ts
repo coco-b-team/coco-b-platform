@@ -17,7 +17,10 @@ import type {
 async function wpFetch<T>(path: string): Promise<T | null> {
   try {
     const res = await fetch(`${WORDPRESS_API_URL}${path}`, {
-      next: { revalidate: 60 },
+      // 3 minutos — corto para que el equipo vea sus cambios de contenido
+      // rápido durante esta etapa de carga; se puede subir más cerca del
+      // lanzamiento, cuando el contenido deje de cambiar tan seguido.
+      next: { revalidate: 180 },
     });
     if (!res.ok) {
       console.error(`[wp] ${path} respondió ${res.status}`);
@@ -56,10 +59,17 @@ async function mapVilla(post: WPPost<WPVillaAcf>): Promise<Villa> {
     acf.gallery_image_5,
   ].filter((id): id is number => Boolean(id));
 
-  const [mainImage, gallery] = await Promise.all([
+  const [mainImage, rawGallery] = await Promise.all([
     resolveMediaUrl(acf.main_image),
     Promise.all(galleryIds.map(resolveMediaUrl)),
   ]);
+
+  // Algunas villas tienen la misma foto cargada como imagen principal y
+  // como parte de la galería — se deduplica acá, una sola vez, en vez de
+  // que cada pantalla que use esta villa tenga que hacerlo por su cuenta.
+  const gallery = [...new Set(rawGallery.filter((url): url is string => Boolean(url)))].filter(
+    (url) => url !== mainImage,
+  );
 
   return {
     id: post.id,
@@ -69,7 +79,7 @@ async function mapVilla(post: WPPost<WPVillaAcf>): Promise<Villa> {
     shortDescription: acf.short_description ?? '',
     longDescription: acf.long_description ?? '',
     mainImage,
-    gallery: gallery.filter((url): url is string => Boolean(url)),
+    gallery,
     suiteCapacity: toNumberOrNull(acf.suite_capacity),
     guestCapacity: toNumberOrNull(acf.guest_capacity),
     bedrooms: toNumberOrNull(acf.bedrooms),
@@ -180,7 +190,7 @@ export async function getVillas(): Promise<Villa[]> {
 }
 
 export async function getVilla(slug: string): Promise<Villa | null> {
-  const posts = await wpFetch<WPPost<WPVillaAcf>[]>(`/wp/v2/villa?slug=${slug}`);
+  const posts = await wpFetch<WPPost<WPVillaAcf>[]>(`/wp/v2/villa?slug=${encodeURIComponent(slug)}`);
   if (!posts || posts.length === 0) return null;
   return mapVilla(posts[0]);
 }
@@ -192,7 +202,7 @@ export async function getRetreats(): Promise<Retreat[]> {
 }
 
 export async function getRetreat(slug: string): Promise<Retreat | null> {
-  const posts = await wpFetch<WPPost<WPRetreatAcf>[]>(`/wp/v2/retreat?slug=${slug}`);
+  const posts = await wpFetch<WPPost<WPRetreatAcf>[]>(`/wp/v2/retreat?slug=${encodeURIComponent(slug)}`);
   if (!posts || posts.length === 0) return null;
   return mapRetreat(posts[0]);
 }

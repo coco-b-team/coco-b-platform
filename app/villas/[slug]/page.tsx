@@ -29,7 +29,8 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
   const villa = await getVilla(slug);
   if (!villa) notFound();
 
-  const images = [...new Set([villa.mainImage, ...villa.gallery].filter((url): url is string => Boolean(url)))];
+  // mainImage y gallery ya vienen sin duplicados desde lib/wp/client.ts
+  const images = [villa.mainImage, ...villa.gallery].filter((url): url is string => Boolean(url));
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-16 sm:px-10">

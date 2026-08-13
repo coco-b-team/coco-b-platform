@@ -26,7 +26,7 @@ export function VillaGallery({ images, alt }: { images: string[]; alt: string })
                 i === active ? 'border-primary' : 'border-transparent'
               }`}
             >
-              <Image src={src} alt="" fill sizes="80px" className="object-cover" />
+              <Image src={src} alt={`${alt} — foto ${i + 1}`} fill sizes="80px" className="object-cover" />
             </button>
           ))}
         </div>
