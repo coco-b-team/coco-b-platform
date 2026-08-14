@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getVilla } from '@/lib/wp/client';
 import { VillaGallery } from '@/components/villas/VillaGallery';
 import { Button } from '@/components/ui/Button';
+import { VillaWeddingForm } from '@/components/forms';
 
 function formatPrice(startingPrice: number | null, priceUnit: string, priceOnRequest: boolean) {
   if (priceOnRequest || !startingPrice) return 'Price on request';
@@ -48,7 +49,9 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
             {formatPrice(villa.startingPrice, villa.priceUnit, villa.priceOnRequest)}
           </p>
         </div>
-        <Button variant="primary">Inquire</Button>
+        <Button href="#inquiry" variant="primary">
+          Inquire
+        </Button>
       </div>
 
       {(villa.guestCapacity || villa.bedrooms || villa.bathrooms || villa.location) && (
@@ -63,8 +66,13 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
 
       <p className="mt-8 whitespace-pre-line text-text-muted">{villa.longDescription}</p>
 
-      <div className="mt-8">
-        <Button variant="primary">Inquire</Button>
+      <div id="inquiry" className="mt-12 scroll-mt-24 border-t border-border pt-10">
+        <p className="text-xs tracking-widest text-text-muted uppercase">Plan your stay</p>
+        <h2 className="mt-1 text-2xl font-semibold">Request {villa.title}</h2>
+        <p className="mt-2 mb-6 text-text-muted">
+          Share your preferred dates and our team will contact you.
+        </p>
+        <VillaWeddingForm villaId={String(villa.id)} />
       </div>
     </section>
   );
