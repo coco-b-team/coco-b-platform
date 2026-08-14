@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isSameOrigin } from '@/lib/security/sameOrigin';
+import { isRateLimited } from '@/lib/ai/rateLimit';
+import { isSameOrigin, getClientKey } from '@/lib/security/sameOrigin';
 import { isFormType } from '@/lib/hubspot/schemas';
 import { validatePayload } from '@/lib/hubspot/validate';
 import { verifyTurnstile } from '@/lib/hubspot/turnstile';
@@ -7,9 +8,19 @@ import { submitToHubSpot } from '@/lib/hubspot/submit';
 
 type RouteContext = { params: Promise<{ formType: string }> };
 
+const SCOPE = 'hubspot';
+
 export async function POST(request: NextRequest, { params }: RouteContext) {
   if (!isSameOrigin(request)) {
     return NextResponse.json({ error: 'Origen no permitido.' }, { status: 403 });
+  }
+
+  const clientKey = getClientKey(request);
+  if (await isRateLimited(SCOPE, clientKey)) {
+    return NextResponse.json(
+      { error: 'Demasiadas solicitudes en poco tiempo. Intenta de nuevo en unos minutos.' },
+      { status: 429 },
+    );
   }
 
   const { formType } = await params;

@@ -1,4 +1,4 @@
-export const formTypes = ['villa-wedding', 'retreat-host', 'popup-waitlist'] as const;
+export const formTypes = ['villa-wedding', 'popup-waitlist'] as const;
 
 export type HubSpotFormType = (typeof formTypes)[number];
 
@@ -22,19 +22,6 @@ export const formSchemas: Record<HubSpotFormType, Record<string, FieldRule>> = {
     message: { maxLength: 2000 },
     sms_consent: { required: true, type: 'boolean' },
   },
-  'retreat-host': {
-    first_name: { required: true, maxLength: 100 },
-    last_name: { required: true, maxLength: 100 },
-    email: { required: true, type: 'email', maxLength: 254 },
-    phone: { required: true, maxLength: 40 },
-    organization: { maxLength: 150 },
-    retreat_type: { required: true, maxLength: 100 },
-    preferred_start_date: { type: 'date' },
-    preferred_end_date: { type: 'date' },
-    estimated_guest_count: { required: true, type: 'number' },
-    experience_level: { maxLength: 100 },
-    message: { maxLength: 2000 },
-  },
   'popup-waitlist': {
     first_name: { required: true, maxLength: 100 },
     last_name: { required: true, maxLength: 100 },
@@ -49,4 +36,3 @@ export const formSchemas: Record<HubSpotFormType, Record<string, FieldRule>> = {
 export function isFormType(value: string): value is HubSpotFormType {
   return formTypes.includes(value as HubSpotFormType);
 }
-

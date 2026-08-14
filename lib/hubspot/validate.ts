@@ -55,14 +55,5 @@ export function validatePayload(type: HubSpotFormType, input: unknown) {
   ) {
     return { data: null, error: 'El check-out debe ser posterior al check-in.' } as const;
   }
-  if (
-    type === 'retreat-host' &&
-    data.preferred_start_date &&
-    data.preferred_end_date &&
-    String(data.preferred_start_date) >= String(data.preferred_end_date)
-  ) {
-    return { data: null, error: 'La fecha final debe ser posterior a la inicial.' } as const;
-  }
-
   return { data, error: null } as const;
 }

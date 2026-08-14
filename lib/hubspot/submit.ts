@@ -3,7 +3,6 @@ import type { FormPayload } from './validate';
 
 const FORM_ID_ENV: Record<HubSpotFormType, string> = {
   'villa-wedding': 'HUBSPOT_VILLA_FORM_ID',
-  'retreat-host': 'HUBSPOT_RETREAT_FORM_ID',
   'popup-waitlist': 'HUBSPOT_WAITLIST_FORM_ID',
 };
 
@@ -44,4 +43,3 @@ export async function submitToHubSpot(
     throw new Error('HubSpot rechazó el envío.');
   }
 }
-
