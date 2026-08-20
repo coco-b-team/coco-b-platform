@@ -3,6 +3,7 @@ import { getVillas } from '@/lib/wp/client';
 import type { Villa } from '@/lib/wp/types';
 import { isRateLimited } from '@/lib/ai/rateLimit';
 import { isSameOrigin, getClientKey } from '@/lib/security/sameOrigin';
+import { estimateGuestCapacity } from '@/lib/villas';
 
 const SCOPE = 'recommend';
 
@@ -10,10 +11,7 @@ const SCOPE = 'recommend';
 // datos reales de las villas. No tiene que ser perfecta, solo funcionar
 // de principio a fin (tal como pide el brief).
 function scoreVilla(villa: Villa, groupSize: number, interest: string): number {
-  // A varias villas les falta "guest_capacity" cargado en WordPress —
-  // cuando falta, se estima a partir de las habitaciones (2 huéspedes por
-  // habitación es un cálculo razonable) en vez de tratarla como capacidad 0.
-  const capacity = villa.guestCapacity ?? (villa.bedrooms ? villa.bedrooms * 2 : 0);
+  const capacity = estimateGuestCapacity(villa.guestCapacity, villa.bedrooms) ?? 0;
   let score = 0;
 
   if (capacity >= groupSize) {

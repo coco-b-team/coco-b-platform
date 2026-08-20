@@ -1,45 +1,44 @@
-import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
+import { SplitCardImage } from '@/components/ui/SplitCardImage';
 import { Button } from '@/components/ui/Button';
+import { ReadMoreButton, type QuickViewItem } from '@/components/villas/ReadMoreButton';
+import { VillaSpecs } from '@/components/villas/VillaSpecs';
+import { formatPackagePrice } from '@/lib/villas';
 import type { Package } from '@/lib/wp/types';
 
-function formatPrice(pkg: Package) {
-  if (!pkg.startingPrice) return 'Price on request';
-  const price = new Intl.NumberFormat('en-US').format(pkg.startingPrice);
-  return `From $${price}/night + taxes`;
-}
-
-export function PackageCard({ pkg }: { pkg: Package }) {
+export function PackageCard({
+  pkg,
+  images,
+  quickViewItems,
+  quickViewIndex,
+}: {
+  pkg: Package;
+  images?: string[];
+  quickViewItems: QuickViewItem[];
+  quickViewIndex: number;
+}) {
   return (
     <Card className="flex flex-col overflow-hidden">
-      {pkg.mainImage && (
-        <div className="relative h-64 bg-background-alt">
-          <Image
-            src={pkg.mainImage}
-            alt={pkg.title}
-            fill
-            sizes="(min-width: 640px) 50vw, 100vw"
-            className="object-cover"
-          />
-        </div>
-      )}
+      <SplitCardImage images={images ?? (pkg.mainImage ? [pkg.mainImage] : [])} alt={pkg.title} />
       <div className="flex flex-1 flex-col gap-3 p-6">
         <p className="text-xs tracking-widest text-text-muted uppercase">Combined Package</p>
-        <p className="text-xl font-semibold">{pkg.title}</p>
-        <p className="text-text-muted">{pkg.shortDescription}</p>
+        <p className="text-lg font-medium tracking-wider uppercase">{pkg.title}</p>
+        <p className="line-clamp-3 text-text-muted">{pkg.shortDescription}</p>
 
-        {(pkg.guestCapacity || pkg.totalSuiteCapacity) && (
-          <div className="flex gap-6 py-2 text-center text-xs tracking-wide text-text uppercase">
-            {pkg.guestCapacity && <span>{pkg.guestCapacity} Guests</span>}
-            {pkg.totalSuiteCapacity && <span>{pkg.totalSuiteCapacity} Suites</span>}
-          </div>
-        )}
+        <VillaSpecs
+          guestCapacity={pkg.guestCapacity}
+          bedrooms={pkg.bedrooms}
+          bathrooms={pkg.bathrooms}
+          className="py-2"
+        />
 
-        <p className="font-semibold">{formatPrice(pkg)}</p>
+        <p className="font-semibold">{formatPackagePrice(pkg.startingPrice)}</p>
 
         <div className="mt-auto flex gap-3 pt-2">
-          <Button variant="secondary">Read More</Button>
-          <Button variant="primary">Inquire</Button>
+          <ReadMoreButton items={quickViewItems} index={quickViewIndex} />
+          <Button href={`/packages/${pkg.slug}#inquiry`} variant="primary">
+            Inquire
+          </Button>
         </div>
       </div>
     </Card>

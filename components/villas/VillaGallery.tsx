@@ -22,7 +22,7 @@ export function VillaGallery({ images, alt }: { images: string[]; alt: string })
               key={`${i}-${src}`}
               onClick={() => setActive(i)}
               aria-label={`Ver foto ${i + 1}`}
-              className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 ${
+              className={`relative h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 ${
                 i === active ? 'border-primary' : 'border-transparent'
               }`}
             >

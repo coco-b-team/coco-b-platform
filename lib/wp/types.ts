@@ -80,6 +80,9 @@ export type Package = {
   mainImage: string | null;
   totalSuiteCapacity: number | null;
   guestCapacity: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  relatedVillas: number[];
   startingPrice: number | null;
   currency: string;
   discountLabel: string;
@@ -94,6 +97,7 @@ export type Testimonial = {
   quote: string;
   authorDetail: string;
   authorImage: string | null;
+  reviewDate: string;
   testimonialType: string;
   rating: number | null;
   isFeatured: boolean;
@@ -129,6 +133,8 @@ export type Hero = {
   imageAlt: string;
   eyebrow: string;
   heading: string;
+  villasHeading: string;
+  villasDescription: string;
 };
 
 export type SiteLocation = {
@@ -204,6 +210,9 @@ export type WPPackageAcf = {
   main_image: number | null;
   total_suite_capacity: number | string;
   guest_capacity: number | string;
+  bedrooms: number | string;
+  bathrooms: number | string;
+  related_villas: number[] | null;
   starting_price: number | string;
   currency: string;
   discount_label: string;
@@ -217,6 +226,7 @@ export type WPTestimonialAcf = {
   quote: string;
   author_detail: string;
   author_image: number | null;
+  testimonial_date: string;
   testimonial_type: string;
   rating: number | string;
   is_featured: boolean;
@@ -247,6 +257,8 @@ export type WPHeroAcf = {
   hero_image_alt: string;
   hero_eyebrow: string;
   hero_heading: string;
+  villas_heading: string;
+  villas_description: string;
 };
 
 export type WPLocationAcf = {

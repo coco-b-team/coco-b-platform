@@ -150,6 +150,9 @@ async function mapPackage(post: WPPost<WPPackageAcf>): Promise<Package> {
     mainImage,
     totalSuiteCapacity: toNumberOrNull(acf.total_suite_capacity),
     guestCapacity: toNumberOrNull(acf.guest_capacity),
+    bedrooms: toNumberOrNull(acf.bedrooms),
+    bathrooms: toNumberOrNull(acf.bathrooms),
+    relatedVillas: acf.related_villas ?? [],
     startingPrice: toNumberOrNull(acf.starting_price),
     currency: acf.currency ?? 'USD',
     discountLabel: acf.discount_label ?? '',
@@ -169,6 +172,7 @@ async function mapTestimonial(post: WPPost<WPTestimonialAcf>): Promise<Testimoni
     quote: acf.quote ?? '',
     authorDetail: acf.author_detail ?? '',
     authorImage,
+    reviewDate: acf.testimonial_date ?? '',
     testimonialType: acf.testimonial_type ?? '',
     rating: toNumberOrNull(acf.rating),
     isFeatured: Boolean(acf.is_featured),
@@ -219,6 +223,9 @@ const DEFAULT_HERO: Hero = {
   imageAlt: 'Piscina infinita frente al mar en una villa de Coco B Isla',
   eyebrow: 'A Luxury Experience',
   heading: 'In Isla Mujeres',
+  villasHeading: 'Our Villa Collection',
+  villasDescription:
+    'Our exclusive collection includes four exquisite villas: Lola, Encantada, Coco, and Cielo. Each villa offers a unique blend of indoor and outdoor living spaces, perfect for families, friends, corporate retreats, wedding or wellness getaways. With direct access to calm waters and breathtaking sunsets over the Caribbean, Coco B Isla Villas promises an exceptional and unforgettable experience.',
 };
 
 const DEFAULT_LOCATION: SiteLocation = {
@@ -284,6 +291,12 @@ export async function getPackages(): Promise<Package[]> {
   return bySortOrder(await Promise.all(posts.map(mapPackage)));
 }
 
+export async function getPackage(slug: string): Promise<Package | null> {
+  const posts = await wpFetch<WPPost<WPPackageAcf>[]>(`/wp/v2/package?slug=${encodeURIComponent(slug)}`);
+  if (!posts || posts.length === 0) return null;
+  return mapPackage(posts[0]);
+}
+
 export async function getTestimonials(): Promise<Testimonial[]> {
   const posts = await wpFetch<WPPost<WPTestimonialAcf>[]>('/wp/v2/testimonial?per_page=100');
   if (!posts) return [];
@@ -323,6 +336,8 @@ export async function getHero(): Promise<Hero> {
     imageAlt: acf.hero_image_alt || DEFAULT_HERO.imageAlt,
     eyebrow: acf.hero_eyebrow || DEFAULT_HERO.eyebrow,
     heading: acf.hero_heading || DEFAULT_HERO.heading,
+    villasHeading: acf.villas_heading || DEFAULT_HERO.villasHeading,
+    villasDescription: acf.villas_description || DEFAULT_HERO.villasDescription,
   };
 }
 
