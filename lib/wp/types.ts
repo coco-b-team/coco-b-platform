@@ -128,6 +128,28 @@ export type Contact = {
   sortOrder: number;
 };
 
+export type Award = {
+  id: number;
+  title: string;
+  year: string;
+  source: string;
+  description: string;
+  logo: string | null;
+  sortOrder: number;
+};
+
+export type AboutContent = {
+  heading: string;
+  triad: { title: string; body: string }[];
+  story: string;
+  mission: string;
+  tagline: string;
+  sustainabilityHeading: string;
+  sustainabilityIntro: string;
+  sustainabilitySections: { heading: string; body: string }[];
+  sustainabilityClosing: string;
+};
+
 export type Hero = {
   image: string | null;
   imageAlt: string;
@@ -265,4 +287,42 @@ export type WPLocationAcf = {
   location_heading: string;
   location_description: string;
   location_map_url: string;
+};
+
+export type WPAwardAcf = {
+  award_year: string;
+  award_source: string;
+  award_description: string;
+  award_logo: number | null;
+  sort_order: number | string;
+};
+
+export type WPAboutAcf = {
+  about_heading: string;
+  triad_1_title: string;
+  triad_1_body: string;
+  triad_2_title: string;
+  triad_2_body: string;
+  triad_3_title: string;
+  triad_3_body: string;
+  about_story: string;
+  about_mission: string;
+  about_tagline: string;
+  sustainability_heading: string;
+  sustainability_intro: string;
+  sustainability_section_1_heading: string;
+  sustainability_section_1_body: string;
+  sustainability_section_2_heading: string;
+  sustainability_section_2_body: string;
+  sustainability_section_3_heading: string;
+  sustainability_section_3_body: string;
+  sustainability_section_4_heading: string;
+  sustainability_section_4_body: string;
+  sustainability_section_5_heading: string;
+  sustainability_section_5_body: string;
+  sustainability_section_6_heading: string;
+  sustainability_section_6_body: string;
+  sustainability_section_7_heading: string;
+  sustainability_section_7_body: string;
+  sustainability_closing: string;
 };
