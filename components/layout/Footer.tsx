@@ -1,6 +1,6 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa6';
-import { Logo } from '@/components/ui/Logo';
 import { getContacts } from '@/lib/wp/client';
 import type { Contact } from '@/lib/wp/types';
 
@@ -13,10 +13,10 @@ const FALLBACK_CONTACTS: Contact[] = [
 ];
 
 const socialLinks = [
-  { href: 'https://facebook.com', label: 'Facebook', Icon: FaFacebook },
-  { href: 'https://instagram.com', label: 'Instagram', Icon: FaInstagram },
-  { href: 'https://youtube.com', label: 'YouTube', Icon: FaYoutube },
-  { href: 'https://tiktok.com', label: 'TikTok', Icon: FaTiktok },
+  { href: 'https://www.facebook.com/cocobisla/', label: 'Facebook', Icon: FaFacebook },
+  { href: 'https://www.instagram.com/cocobisla.mx/', label: 'Instagram', Icon: FaInstagram },
+  { href: 'https://www.youtube.com/channel/UC3J2ZwMILjW1dFvrMBl-ZGQ', label: 'YouTube', Icon: FaYoutube },
+  { href: 'https://www.tiktok.com/tag/cocobisla', label: 'TikTok', Icon: FaTiktok },
 ];
 
 export async function Footer() {
@@ -25,17 +25,44 @@ export async function Footer() {
 
   return (
     <footer className="w-full bg-text py-16 text-background">
-      <div className="mx-auto max-w-6xl px-6">
-        <Logo variant="white" width={177} height={14} className="mb-12 h-auto w-44" />
+      <div className="mx-auto max-w-6xl px-6 sm:px-10">
+        {/* En tablet/desktop, el logo + las 3 columnas quedan centrados como
+            un solo bloque en el medio de la sección (antes se pegaban al
+            borde izquierdo del contenedor completo). En mobile este ancho
+            no aplica — ver el listado compacto más abajo. */}
+        <div className="sm:mx-auto sm:max-w-3xl">
+          <Image
+            src="/logo-mark-white.png"
+            alt="Coco B Isla"
+            width={120}
+            height={100}
+            className="mb-12 h-16 w-auto"
+          />
 
-        <div className="grid gap-10 sm:grid-cols-3">
-          {contactBlocks.map((block) => (
-            <div key={block.id}>
-              <p className="text-sm font-semibold tracking-widest text-accent uppercase">{block.title}</p>
-              <p className="mt-3 text-text-muted">{block.email}</p>
-              <p className="mt-1 text-text-muted">{block.phone}</p>
-            </div>
-          ))}
+          {/* Mobile: lista compacta (título + "correo · teléfono" en una
+              sola línea, separada por una línea sutil) — antes eran 3 líneas
+              por bloque y quedaba muy largo. */}
+          <div className="divide-y divide-white/10 sm:hidden">
+            {contactBlocks.map((block) => (
+              <div key={block.id} className="py-4 first:pt-0 last:pb-0">
+                <p className="text-sm font-semibold tracking-widest text-accent uppercase">{block.title}</p>
+                <p className="mt-1 text-text-muted">
+                  {block.email} · {block.phone}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Tablet/desktop: las 3 columnas completas, como antes. */}
+          <div className="hidden gap-10 sm:grid sm:grid-cols-3">
+            {contactBlocks.map((block) => (
+              <div key={block.id}>
+                <p className="text-sm font-semibold tracking-widest text-accent uppercase">{block.title}</p>
+                <p className="mt-3 text-text-muted">{block.email}</p>
+                <p className="mt-1 text-text-muted">{block.phone}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-6 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
