@@ -11,6 +11,8 @@ import type {
   Contact,
   Hero,
   SiteLocation,
+  Award,
+  AboutContent,
   WPPost,
   WPVillaAcf,
   WPRetreatAcf,
@@ -21,6 +23,8 @@ import type {
   WPContactAcf,
   WPHeroAcf,
   WPLocationAcf,
+  WPAwardAcf,
+  WPAboutAcf,
 } from './types';
 
 async function wpFetch<T>(path: string): Promise<T | null> {
@@ -150,6 +154,9 @@ async function mapPackage(post: WPPost<WPPackageAcf>): Promise<Package> {
     mainImage,
     totalSuiteCapacity: toNumberOrNull(acf.total_suite_capacity),
     guestCapacity: toNumberOrNull(acf.guest_capacity),
+    bedrooms: toNumberOrNull(acf.bedrooms),
+    bathrooms: toNumberOrNull(acf.bathrooms),
+    relatedVillas: acf.related_villas ?? [],
     startingPrice: toNumberOrNull(acf.starting_price),
     currency: acf.currency ?? 'USD',
     discountLabel: acf.discount_label ?? '',
@@ -169,6 +176,7 @@ async function mapTestimonial(post: WPPost<WPTestimonialAcf>): Promise<Testimoni
     quote: acf.quote ?? '',
     authorDetail: acf.author_detail ?? '',
     authorImage,
+    reviewDate: acf.testimonial_date ?? '',
     testimonialType: acf.testimonial_type ?? '',
     rating: toNumberOrNull(acf.rating),
     isFeatured: Boolean(acf.is_featured),
@@ -198,6 +206,20 @@ function mapService(post: WPPost<WPServiceAcf>): Service {
   };
 }
 
+async function mapAward(post: WPPost<WPAwardAcf>): Promise<Award> {
+  const acf = post.acf;
+  const logo = await resolveMediaUrl(acf.award_logo);
+  return {
+    id: post.id,
+    title: title(post),
+    year: acf.award_year ?? '',
+    source: acf.award_source ?? '',
+    description: acf.award_description ?? '',
+    logo,
+    sortOrder: toNumberOrNull(acf.sort_order) ?? 0,
+  };
+}
+
 function mapContact(post: WPPost<WPContactAcf>): Contact {
   const acf = post.acf;
   return {
@@ -219,6 +241,9 @@ const DEFAULT_HERO: Hero = {
   imageAlt: 'Piscina infinita frente al mar en una villa de Coco B Isla',
   eyebrow: 'A Luxury Experience',
   heading: 'In Isla Mujeres',
+  villasHeading: 'Our Villa Collection',
+  villasDescription:
+    'Our exclusive collection includes four exquisite villas: Lola, Encantada, Coco, and Cielo. Each villa offers a unique blend of indoor and outdoor living spaces, perfect for families, friends, corporate retreats, wedding or wellness getaways. With direct access to calm waters and breathtaking sunsets over the Caribbean, Coco B Isla Villas promises an exceptional and unforgettable experience.',
 };
 
 const DEFAULT_LOCATION: SiteLocation = {
@@ -226,6 +251,73 @@ const DEFAULT_LOCATION: SiteLocation = {
   description:
     "Just a 20 minute ride off the coast of Cancun, you'll find Isla Mujeres, the island of women, floating in the turquoise blue waters of the Caribbean. The privileged location of Coco B Isla Villas lets you enjoy an oasis like escape from the hustle and bustle of city life, yet be just minutes away from the beach and family experiences.",
   mapUrl: 'https://www.google.com/maps?q=Isla+Mujeres,+Quintana+Roo,+Mexico&output=embed',
+};
+
+// Mismo caso que Hero/Ubicación arriba: "about" está pensado como una sola
+// entrada en WordPress. Este es el contenido real de marca, usado si
+// WordPress no responde o el campo todavía no se cargó.
+const DEFAULT_ABOUT: AboutContent = {
+  heading: 'A Caribbean Sanctuary',
+  triad: [
+    {
+      title: 'Breathe',
+      body: "Start your day with a deep breath of crisp, clean air as you take in the panoramic views of the Caribbean Sea from your private balcony. Coco B Isla's serenity helps you reconnect with the natural world.",
+    },
+    {
+      title: 'Nourish',
+      body: 'Our chef services ensure your dietary needs and desires are met with exquisite attention to detail. Every meal is a nourishing experience tailored just for you, from detox smoothies to decadent dinners.',
+    },
+    {
+      title: 'Flow',
+      body: 'Let your worries drift away as you move through our beautifully designed spaces. The architecture of Coco B Isla seamlessly blends indoor and outdoor living, creating a harmonious flow that enhances your sense of well-being.',
+    },
+  ],
+  story: [
+    'For over a decade, we dreamed of creating a beautiful Caribbean sanctuary where our guests could unwind, refresh, and immerse themselves in comfort, tranquility, and timeless style. A place where stress dissolves in the beautiful blue sea, sunsets take your breath away, and the daily grind gives way to a welcome fragrance in the morning air.',
+    "Welcome to Coco B Isla & Coco B Wellness, our sanctuary in Isla Mujeres, the Isle of Women. This island is the home of Ixchel, the Mayan Goddess of Love and Fertility, and one of the Caribbean's most beautiful islands, celebrating Mexican and Mayan cultures afloat on the crystal blue Caribbean waters.",
+    "Whether you decide to do absolutely nothing or immerse yourself in the island and region's magical culture, our mission is your delight. Coco B is dedicated to offering a beautiful luxury vacation and wellness sanctuary where like-minded guests will practice, relax, connect, and delight in the splendor of our environment, the island, and the region.",
+    'We welcome instructors and studios worldwide to take advantage of our intimate wellness location or for you to join one of our yoga and wellness vacation experiences.',
+  ].join('\n\n'),
+  mission:
+    'Our Mission is to deliver inspirational whole-health integrative wellness in a fun, relaxing, beautiful, and restorative environment.',
+  tagline: 'Breathe · Nourish · Flow',
+  sustainabilityHeading: 'Sustainability at Coco B Isla',
+  sustainabilityIntro:
+    'At Coco B Isla, we are committed to preserving the natural beauty of Isla Mujeres and minimizing our environmental impact through various sustainable practices. Our dedication to sustainability encompasses everything from composting to community engagement, ensuring a greener, more eco-friendly experience for our guests.',
+  sustainabilitySections: [
+    {
+      heading: 'Composting and Organic Gardening',
+      body: 'We have established a composting system for organic kitchen waste from the restaurant and guest meals. This compost is then used for our on-site gardening, where we grow fresh herbs and flowers. This significantly reduces the need for external fertilizers and promotes a closed-loop system.',
+    },
+    {
+      heading: 'Water Conservation',
+      body: 'We have implemented low-flow fixtures in all showers, faucets, and toilets to conserve water. Additionally, we utilize passive water wells and rainwater catchment systems to irrigate our gardens, making the most of natural water resources.',
+    },
+    {
+      heading: 'Community Engagement',
+      body: "We are proud to partner with local organizations to promote sustainability initiatives and celebrate Isla Mujeres's cultural heritage. Our team actively participates in island clean-up programs and other community-focused events.",
+    },
+    {
+      heading: 'Eliminating Plastic Waste',
+      body: 'In our villas, guests receive complimentary branded reusable water bottles upon arrival, encouraging them to refill at our purified water stations throughout the property. These bottles are also available for hotel guests, with some of the proceeds supporting an orphanage in nearby Cancún. We strictly avoid using plastic bottles, providing purified water in glass jars on nightstands daily for Villa and Hotel Guests.',
+    },
+    {
+      heading: 'Sustainable Sourcing',
+      body: 'We source our food locally and seasonally, supporting local farmers and reducing the carbon footprint associated with transporting goods. Our cleaning products and toiletries are eco-friendly, ensuring a minimal environmental impact.',
+    },
+    {
+      heading: 'Eco-Friendly Transportation',
+      body: 'Guests are encouraged to explore the island using our bicycles and renting electric golf carts, reducing carbon emissions and promoting a healthier way to travel.',
+    },
+    {
+      heading: 'Green Building Practices',
+      body: 'We use sustainable building materials and techniques whenever we undertake new construction or renovations, and our designs incorporate many locally produced and sourced materials. As well, we design for optimum flow for natural ventilation and lighting to reduce energy consumption, creating a comfortable and environmentally friendly atmosphere.',
+    },
+  ],
+  sustainabilityClosing: [
+    'At Coco B Isla, we are dedicated to offering a luxurious yet sustainable vacation experience.',
+    'We allow our guests to relax and rejuvenate while also supporting and protecting our beautiful environment.',
+  ].join('\n\n'),
 };
 
 function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
@@ -284,6 +376,12 @@ export async function getPackages(): Promise<Package[]> {
   return bySortOrder(await Promise.all(posts.map(mapPackage)));
 }
 
+export async function getPackage(slug: string): Promise<Package | null> {
+  const posts = await wpFetch<WPPost<WPPackageAcf>[]>(`/wp/v2/package?slug=${encodeURIComponent(slug)}`);
+  if (!posts || posts.length === 0) return null;
+  return mapPackage(posts[0]);
+}
+
 export async function getTestimonials(): Promise<Testimonial[]> {
   const posts = await wpFetch<WPPost<WPTestimonialAcf>[]>('/wp/v2/testimonial?per_page=100');
   if (!posts) return [];
@@ -323,6 +421,8 @@ export async function getHero(): Promise<Hero> {
     imageAlt: acf.hero_image_alt || DEFAULT_HERO.imageAlt,
     eyebrow: acf.hero_eyebrow || DEFAULT_HERO.eyebrow,
     heading: acf.hero_heading || DEFAULT_HERO.heading,
+    villasHeading: acf.villas_heading || DEFAULT_HERO.villasHeading,
+    villasDescription: acf.villas_description || DEFAULT_HERO.villasDescription,
   };
 }
 
@@ -337,5 +437,76 @@ export async function getSiteLocation(): Promise<SiteLocation> {
     heading: acf.location_heading || DEFAULT_LOCATION.heading,
     description: acf.location_description || DEFAULT_LOCATION.description,
     mapUrl: acf.location_map_url || DEFAULT_LOCATION.mapUrl,
+  };
+}
+
+export async function getAwards(): Promise<Award[]> {
+  const posts = await wpFetch<WPPost<WPAwardAcf>[]>('/wp/v2/award?per_page=100');
+  if (!posts || posts.length === 0) return [];
+  return bySortOrder(await Promise.all(posts.map(mapAward)));
+}
+
+export async function getAbout(): Promise<AboutContent> {
+  // Mismo motivo que en getHero()/getSiteLocation(): orden explícito para
+  // que una segunda entrada creada por error no gane por casualidad. Los
+  // campos del trío y de sustentabilidad son planos y numerados (no un
+  // repeater) porque el plugin de repeaters gratuito no los expone en la
+  // API REST — mismo patrón que ya usa Villa para su galería.
+  const posts = await wpFetch<WPPost<WPAboutAcf>[]>('/wp/v2/about?per_page=1&orderby=id&order=asc');
+  const acf = posts?.[0]?.acf;
+  if (!acf) return DEFAULT_ABOUT;
+
+  return {
+    heading: acf.about_heading || DEFAULT_ABOUT.heading,
+    triad: [
+      {
+        title: acf.triad_1_title || DEFAULT_ABOUT.triad[0].title,
+        body: acf.triad_1_body || DEFAULT_ABOUT.triad[0].body,
+      },
+      {
+        title: acf.triad_2_title || DEFAULT_ABOUT.triad[1].title,
+        body: acf.triad_2_body || DEFAULT_ABOUT.triad[1].body,
+      },
+      {
+        title: acf.triad_3_title || DEFAULT_ABOUT.triad[2].title,
+        body: acf.triad_3_body || DEFAULT_ABOUT.triad[2].body,
+      },
+    ],
+    story: acf.about_story || DEFAULT_ABOUT.story,
+    mission: acf.about_mission || DEFAULT_ABOUT.mission,
+    tagline: acf.about_tagline || DEFAULT_ABOUT.tagline,
+    sustainabilityHeading: acf.sustainability_heading || DEFAULT_ABOUT.sustainabilityHeading,
+    sustainabilityIntro: acf.sustainability_intro || DEFAULT_ABOUT.sustainabilityIntro,
+    sustainabilitySections: [
+      {
+        heading: acf.sustainability_section_1_heading || DEFAULT_ABOUT.sustainabilitySections[0].heading,
+        body: acf.sustainability_section_1_body || DEFAULT_ABOUT.sustainabilitySections[0].body,
+      },
+      {
+        heading: acf.sustainability_section_2_heading || DEFAULT_ABOUT.sustainabilitySections[1].heading,
+        body: acf.sustainability_section_2_body || DEFAULT_ABOUT.sustainabilitySections[1].body,
+      },
+      {
+        heading: acf.sustainability_section_3_heading || DEFAULT_ABOUT.sustainabilitySections[2].heading,
+        body: acf.sustainability_section_3_body || DEFAULT_ABOUT.sustainabilitySections[2].body,
+      },
+      {
+        heading: acf.sustainability_section_4_heading || DEFAULT_ABOUT.sustainabilitySections[3].heading,
+        body: acf.sustainability_section_4_body || DEFAULT_ABOUT.sustainabilitySections[3].body,
+      },
+      {
+        heading: acf.sustainability_section_5_heading || DEFAULT_ABOUT.sustainabilitySections[4].heading,
+        body: acf.sustainability_section_5_body || DEFAULT_ABOUT.sustainabilitySections[4].body,
+      },
+      {
+        heading: acf.sustainability_section_6_heading || DEFAULT_ABOUT.sustainabilitySections[5].heading,
+        body: acf.sustainability_section_6_body || DEFAULT_ABOUT.sustainabilitySections[5].body,
+      },
+      {
+        heading: acf.sustainability_section_7_heading || DEFAULT_ABOUT.sustainabilitySections[6].heading,
+        body: acf.sustainability_section_7_body || DEFAULT_ABOUT.sustainabilitySections[6].body,
+      },
+    ],
+    sustainabilityClosing: acf.sustainability_closing || DEFAULT_ABOUT.sustainabilityClosing,
   };
 }

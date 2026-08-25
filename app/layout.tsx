@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="en" className={`${raleway.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <Header />
-        <main className="flex flex-1 flex-col">{children}</main>
+        <main className="flex-1">{children}</main>
         <Footer />
         <ChatWidget />
       </body>

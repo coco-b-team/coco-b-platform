@@ -18,7 +18,7 @@ export default async function Home() {
     <>
       <Hero />
       <VillaCollection villas={villas} />
-      <MixAndMatch packages={packages} />
+      <MixAndMatch packages={packages} villas={villas} />
       <Testimonials testimonials={testimonials} />
       <ComplementYourStay />
       <Location />

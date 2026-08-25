@@ -1,20 +1,52 @@
 import { PackageCard } from './PackageCard';
-import type { Package } from '@/lib/wp/types';
+import { computeComboSpecs, formatPackagePrice } from '@/lib/villas';
+import type { Package, Villa } from '@/lib/wp/types';
+import type { QuickViewItem } from '@/components/villas/ReadMoreButton';
 
-export function MixAndMatch({ packages }: { packages: Package[] }) {
-  const visible = packages.filter((p) => p.showOnLanding);
-  if (visible.length === 0) return null;
+export function MixAndMatch({ packages, villas }: { packages: Package[]; villas: Villa[] }) {
+  // "Mix & Match" son combinaciones reales de dos villas — se filtra por
+  // relatedVillas para no mostrar entradas del mismo tipo de contenido que
+  // no son en realidad una combinación (ej. "Concierge Services").
+  const combos = packages
+    .filter((p) => p.showOnLanding && p.relatedVillas.length > 0)
+    .map((pkg) => {
+      const relatedVillas = villas.filter((v) => pkg.relatedVillas.includes(v.id));
+      // Una foto de cada villa combinada, lado a lado, en vez de la imagen
+      // del paquete en sí — refuerza que son las dos villas juntas.
+      const images = relatedVillas.map((v) => v.mainImage).filter((url): url is string => Boolean(url));
+      // Para la ficha rápida sí conviene la galería completa de ambas villas,
+      // no solo la portada de cada una.
+      const galleryImages = relatedVillas
+        .flatMap((v) => [v.mainImage, ...v.gallery])
+        .filter((url): url is string => Boolean(url));
+      return { ...pkg, ...computeComboSpecs(relatedVillas), images, galleryImages };
+    });
+
+  if (combos.length === 0) return null;
+
+  const quickViewItems: QuickViewItem[] = combos.map((combo) => ({
+    slug: combo.slug,
+    href: `/packages/${combo.slug}`,
+    eyebrow: 'Combined Package',
+    title: combo.title,
+    images: combo.galleryImages,
+    price: formatPackagePrice(combo.startingPrice),
+    description: combo.longDescription || combo.shortDescription,
+    specs: { guestCapacity: combo.guestCapacity, bedrooms: combo.bedrooms, bathrooms: combo.bathrooms },
+  }));
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-16 sm:px-10">
-      <h2 className="font-body text-2xl font-normal">Mix & Match</h2>
-      <p className="mt-4 max-w-2xl text-text-muted">
-        Pair two side-by-side villas for larger groups. Each combination gives you double the
-        space, two pools, and a seamlessly shared stretch of private beachfront.
-      </p>
+    <section id="mix-match" className="mx-auto max-w-6xl scroll-mt-20 px-6 py-16 sm:px-10">
+      <div className="sm:text-center">
+        <h2 className="font-body text-2xl font-normal">Mix & Match</h2>
+        <p className="mt-4 max-w-2xl text-text-muted sm:mx-auto">
+          Pair two side-by-side villas for larger groups. Each combination gives you double the
+          space, two pools, and a seamlessly shared stretch of private beachfront.
+        </p>
+      </div>
       <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
-        {visible.map((pkg) => (
-          <PackageCard key={pkg.id} pkg={pkg} />
+        {combos.map((pkg, i) => (
+          <PackageCard key={pkg.id} pkg={pkg} images={pkg.images} quickViewItems={quickViewItems} quickViewIndex={i} />
         ))}
       </div>
     </section>

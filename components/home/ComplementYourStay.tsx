@@ -1,15 +1,14 @@
-import { FaClock, FaSpa, FaUtensils, FaStar, FaSailboat, FaAnchor } from 'react-icons/fa6';
-import type { IconType } from 'react-icons';
+import Image from 'next/image';
 import { getServices } from '@/lib/wp/client';
 import type { Service } from '@/lib/wp/types';
 
-const ICONS: Record<string, IconType> = {
-  clock: FaClock,
-  spa: FaSpa,
-  chef: FaUtensils,
-  star: FaStar,
-  boat: FaSailboat,
-  anchor: FaAnchor,
+const ICONS: Record<string, string> = {
+  clock: '/icons/clock.svg',
+  spa: '/icons/flower.svg',
+  chef: '/icons/kitchen.svg',
+  star: '/icons/star.svg',
+  boat: '/icons/boat.svg',
+  anchor: '/icons/anchor.svg',
 };
 
 // Respaldo por si WordPress no responde o todavía no tiene servicios
@@ -28,23 +27,20 @@ export async function ComplementYourStay() {
   const services = fetched.length > 0 ? fetched : FALLBACK_SERVICES;
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-16 sm:px-10">
+    <section className="mx-auto max-w-6xl px-6 py-16 sm:px-10 text-center">
       <h2 className="font-body text-2xl font-normal">Complement Your Stay</h2>
-      <p className="mt-4 max-w-2xl text-text-muted">
+      <p className="mt-4 mx-auto max-w-2xl text-text-muted">
         We have some extra services to make your time with us more comfortable.
       </p>
       <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
-        {services.map((service) => {
-          const Icon = ICONS[service.icon] ?? FaStar;
-          return (
-            <div key={service.id} className="flex flex-col items-center gap-3 text-center">
-              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-background-tint text-text">
-                <Icon size={24} />
-              </span>
-              <p className="text-sm tracking-wide uppercase">{service.label}</p>
-            </div>
-          );
-        })}
+        {services.map((service) => (
+          <div key={service.id} className="flex flex-col items-center gap-3 text-center">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-background-tint">
+              <Image src={ICONS[service.icon] ?? '/icons/star.svg'} alt="" width={24} height={24} />
+            </span>
+            <p className="text-sm tracking-wide uppercase">{service.label}</p>
+          </div>
+        ))}
       </div>
     </section>
   );
