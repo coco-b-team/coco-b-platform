@@ -81,7 +81,7 @@ export async function sendConfirmationEmail(type: HubSpotFormType, data: FormPay
       reply_to: replyTo,
       subject: content.subject,
       text: content.plainText,
-      html: `<!doctype html><html><body style="margin:0;background:#f4f1ea;font-family:Arial,sans-serif;color:#292923"><div style="max-width:600px;margin:0 auto;padding:48px 24px"><div style="background:#fff;padding:40px;border-radius:16px"><p style="margin-top:0">${escapeHtml(firstName ? `Hola ${firstName},` : 'Hola,')}</p><h1 style="font-family:Georgia,serif;font-size:30px;font-weight:normal">${escapeHtml(content.heading)}</h1><p style="font-size:16px;line-height:1.7">${escapeHtml(content.intro)}</p>${detailRows ? `<table style="margin:24px 0;border-collapse:collapse">${detailRows}</table>` : ''}<p style="margin:32px 0 0;color:#6b6b63">Coco B Isla</p></div></div></body></html>`,
+      html: `<!doctype html><html lang="es"><head><meta charset="utf-8"></head><body style="margin:0;background:#f4f1ea;font-family:Arial,sans-serif;color:#292923"><div style="max-width:600px;margin:0 auto;padding:48px 24px"><div style="background:#fff;padding:40px;border-radius:16px"><p style="margin-top:0">${escapeHtml(firstName ? `Hola ${firstName},` : 'Hola,')}</p><h1 style="font-family:Georgia,serif;font-size:30px;font-weight:normal">${escapeHtml(content.heading)}</h1><p style="font-size:16px;line-height:1.7">${escapeHtml(content.intro)}</p>${detailRows ? `<table style="margin:24px 0;border-collapse:collapse">${detailRows}</table>` : ''}<p style="margin:32px 0 0;color:#6b6b63">Coco B Isla</p></div></div></body></html>`,
     }),
     signal: AbortSignal.timeout(10000),
   });
