@@ -1,5 +1,18 @@
 export type ChatRole = 'user' | 'model';
 
+// El único formato que el system prompt le permite usar al modelo es
+// **negrita** — se parte el texto en ese patrón y se alterna texto plano
+// con <strong>, sin sumar una librería de markdown para esto solo.
+function renderWithBold(content: string) {
+  const parts = content.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
 export function ChatMessageBubble({ role, content }: { role: ChatRole; content: string }) {
   const isUser = role === 'user';
   return (
@@ -9,7 +22,7 @@ export function ChatMessageBubble({ role, content }: { role: ChatRole; content: 
           isUser ? 'bg-primary text-background' : 'bg-background-alt text-text'
         }`}
       >
-        {content}
+        {renderWithBold(content)}
       </div>
     </div>
   );

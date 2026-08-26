@@ -1,10 +1,14 @@
 import Image from 'next/image';
 
-type LogoVariant = 'default' | 'white';
+type LogoVariant = 'default' | 'white' | 'splash';
 
 const LOGO_SRC: Record<LogoVariant, string> = {
   default: '/logo.svg',
   white: '/logo-white.svg',
+  // Mismo isotipo e ícono que el logo real (colores originales), pero con
+  // el texto en blanco en vez de negro — para que se lea directo sobre el
+  // fondo oscuro del splash, sin necesitar una placa de color detrás.
+  splash: '/logo-splash.svg',
 };
 
 type LogoProps = {

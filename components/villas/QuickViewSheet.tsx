@@ -6,6 +6,9 @@ import { FaChevronLeft, FaChevronRight, FaXmark } from 'react-icons/fa6';
 import { Button } from '@/components/ui/Button';
 import { VillaGallery } from '@/components/villas/VillaGallery';
 import { VillaSpecs } from '@/components/villas/VillaSpecs';
+import { VillaInquireButton } from '@/components/villas/VillaInquireButton';
+import { useBodyScrollLock } from '@/lib/hooks/useBodyScrollLock';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 
 type Specs = { guestCapacity: number | null; bedrooms: number | null; bathrooms: number | null };
 
@@ -18,6 +21,19 @@ export type QuickViewItem = {
   price: string;
   description: string;
   specs?: Specs;
+  // Solo presentes cuando el item es una villa real (no un paquete
+  // combinado) — habilitan el modal de reserva de 2 pasos acá mismo, sin
+  // cerrar la ficha rápida. Los paquetes siguen usando el botón de
+  // "Inquire" de siempre, que lleva a su propio formulario.
+  villaBooking?: {
+    id: number | string;
+    mainImage: string | null;
+    startingPrice: number | null;
+    priceUnit: string;
+    priceOnRequest: boolean;
+    guestCapacity: number | null;
+    bedrooms: number | null;
+  };
 };
 
 export function QuickViewSheet({
@@ -51,28 +67,17 @@ export function QuickViewSheet({
     setIndex((i) => (i + delta + items.length) % items.length);
   }
 
+  useBodyScrollLock(true);
+  const trapRef = useFocusTrap(true);
+
   useEffect(() => {
-    // Compensar el ancho de la scrollbar al bloquear el scroll del body —
-    // si no, al abrir/cerrar la ficha el contenido del home se corre
-    // horizontalmente porque la scrollbar aparece y desaparece.
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    const previousOverflow = document.body.style.overflow;
-    const previousPaddingRight = document.body.style.paddingRight;
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') handleClose();
       if (e.key === 'ArrowLeft' && items.length > 1) go(-1);
       if (e.key === 'ArrowRight' && items.length > 1) go(1);
     };
     document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.body.style.paddingRight = previousPaddingRight;
-      document.removeEventListener('keydown', onKeyDown);
-    };
+    return () => document.removeEventListener('keydown', onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -85,6 +90,11 @@ export function QuickViewSheet({
       />
 
       <div
+        ref={trapRef as React.RefObject<HTMLDivElement>}
+        role="dialog"
+        aria-modal="true"
+        aria-label={current.title}
+        tabIndex={-1}
         className={`absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col rounded-t-2xl bg-background transition-transform duration-300 ease-out ${
           visible ? 'translate-y-0' : 'translate-y-full'
         }`}
@@ -146,9 +156,16 @@ export function QuickViewSheet({
         </div>
 
         <div className="shrink-0 border-t border-border bg-background p-4">
-          <Button href={`${current.href}#inquiry`} variant="primary" className="w-full">
-            Inquire
-          </Button>
+          {current.villaBooking ? (
+            <VillaInquireButton
+              villa={{ title: current.title, ...current.villaBooking }}
+              className="w-full"
+            />
+          ) : (
+            <Button href={`${current.href}#inquiry`} variant="primary" className="w-full">
+              Inquire
+            </Button>
+          )}
         </div>
       </div>
     </div>,

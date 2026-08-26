@@ -1,22 +1,15 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import { getVilla, getVillas } from '@/lib/wp/client';
 import { VillaGallery } from '@/components/villas/VillaGallery';
 import { VillaSpecs } from '@/components/villas/VillaSpecs';
-import { Button } from '@/components/ui/Button';
-import { VillaWeddingForm } from '@/components/forms';
+import { VillaInquireButton } from '@/components/villas/VillaInquireButton';
+import { PrevNextNav } from '@/components/ui/PrevNextNav';
 
 function formatPrice(startingPrice: number | null, priceUnit: string, priceOnRequest: boolean) {
   if (priceOnRequest || !startingPrice) return 'Price on request';
   const price = new Intl.NumberFormat('en-US').format(startingPrice);
   return `From $${price}/${priceUnit || 'night'} + taxes`;
-}
-
-// "Casa Lola" -> "Lola", para el tooltip de las flechas prev/next ("Ver Lola")
-function shortVillaName(title: string) {
-  return title.replace(/^(Casa|Villa)\s+/i, '');
 }
 
 export async function generateMetadata({
@@ -41,10 +34,10 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
   // mainImage y gallery ya vienen sin duplicados desde lib/wp/client.ts
   const images = [villa.mainImage, ...villa.gallery].filter((url): url is string => Boolean(url));
 
-  // Flechas para pasar a la siguiente/anterior villa sin volver al inicio —
-  // mismo orden que se ve en "Our Villa Collection", con vuelta circular
-  // (de la última pasa a la primera) para que la navegación no tenga un
-  // final muerto.
+  // Para pasar a la siguiente/anterior villa desde la franja de navegación
+  // del final de la página — mismo orden que se ve en "Our Villa
+  // Collection", con vuelta circular (de la última pasa a la primera) para
+  // que la navegación no tenga un final muerto.
   const browsable = allVillas.filter((v) => v.showOnLanding);
   const currentIndex = browsable.findIndex((v) => v.slug === slug);
   const hasSiblings = currentIndex >= 0 && browsable.length > 1;
@@ -53,31 +46,6 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-16 sm:px-10">
-      {prevVilla && (
-        <Link
-          href={`/villas/${prevVilla.slug}`}
-          aria-label={`Villa anterior: ${prevVilla.title}`}
-          className="group fixed top-1/2 left-2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-background text-text shadow-md hover:text-primary sm:left-4"
-        >
-          <FaChevronLeft size={16} />
-          <span className="pointer-events-none absolute top-1/2 left-full ml-3 -translate-y-1/2 rounded-md bg-text px-3 py-1.5 text-xs font-medium tracking-wide whitespace-nowrap text-background opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            Ver {shortVillaName(prevVilla.title)}
-          </span>
-        </Link>
-      )}
-      {nextVilla && (
-        <Link
-          href={`/villas/${nextVilla.slug}`}
-          aria-label={`Siguiente villa: ${nextVilla.title}`}
-          className="group fixed top-1/2 right-2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-background text-text shadow-md hover:text-primary sm:right-4"
-        >
-          <FaChevronRight size={16} />
-          <span className="pointer-events-none absolute top-1/2 right-full mr-3 -translate-y-1/2 rounded-md bg-text px-3 py-1.5 text-xs font-medium tracking-wide whitespace-nowrap text-background opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            Ver {shortVillaName(nextVilla.title)}
-          </span>
-        </Link>
-      )}
-
       <p className="text-xs tracking-widest text-text-muted uppercase">{villa.label || 'Villa'}</p>
       <h1 className="font-body mt-1 text-3xl font-semibold">{villa.title}</h1>
 
@@ -92,9 +60,18 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
             {formatPrice(villa.startingPrice, villa.priceUnit, villa.priceOnRequest)}
           </p>
         </div>
-        <Button href="#inquiry" variant="primary">
-          Inquire
-        </Button>
+        <VillaInquireButton
+          villa={{
+            id: villa.id,
+            title: villa.title,
+            mainImage: villa.mainImage,
+            startingPrice: villa.startingPrice,
+            priceUnit: villa.priceUnit,
+            priceOnRequest: villa.priceOnRequest,
+            guestCapacity: villa.guestCapacity,
+            bedrooms: villa.bedrooms,
+          }}
+        />
       </div>
 
       {(villa.guestCapacity || villa.bedrooms || villa.bathrooms || villa.minimumStayNights || villa.location) && (
@@ -111,13 +88,31 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
 
       <p className="mt-8 whitespace-pre-line text-text-muted">{villa.longDescription}</p>
 
-      <div id="inquiry" className="mt-12 scroll-mt-24 border-t border-border pt-10">
+      <PrevNextNav
+        prev={prevVilla && { href: `/villas/${prevVilla.slug}`, title: prevVilla.title }}
+        next={nextVilla && { href: `/villas/${nextVilla.slug}`, title: nextVilla.title }}
+      />
+
+      <div className="mt-12 rounded-2xl bg-background-alt px-6 py-12 text-center sm:px-12">
         <p className="text-xs tracking-widest text-text-muted uppercase">Plan your stay</p>
-        <h2 className="mt-1 text-2xl font-semibold">Request {villa.title}</h2>
-        <p className="mt-2 mb-6 text-text-muted">
-          Share your preferred dates and our team will contact you.
+        <h2 className="font-body mt-2 text-3xl font-semibold">Request {villa.title}</h2>
+        <p className="mx-auto mt-3 max-w-md text-text-muted">
+          Share your preferred dates and our team will get back to you within 24 hours.
         </p>
-        <VillaWeddingForm villaId={String(villa.id)} />
+        <div className="mt-7">
+          <VillaInquireButton
+            villa={{
+              id: villa.id,
+              title: villa.title,
+              mainImage: villa.mainImage,
+              startingPrice: villa.startingPrice,
+              priceUnit: villa.priceUnit,
+              priceOnRequest: villa.priceOnRequest,
+              guestCapacity: villa.guestCapacity,
+              bedrooms: villa.bedrooms,
+            }}
+          />
+        </div>
       </div>
     </section>
   );

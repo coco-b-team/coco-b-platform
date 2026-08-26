@@ -70,6 +70,11 @@ async function mapVilla(post: WPPost<WPVillaAcf>): Promise<Villa> {
     acf.gallery_image_3,
     acf.gallery_image_4,
     acf.gallery_image_5,
+    acf.gallery_image_6,
+    acf.gallery_image_7,
+    acf.gallery_image_8,
+    acf.gallery_image_9,
+    acf.gallery_image_10,
   ].filter((id): id is number => Boolean(id));
 
   const [mainImage, rawGallery] = await Promise.all([
@@ -237,7 +242,7 @@ function mapContact(post: WPPost<WPContactAcf>): Contact {
 // defecto son el mismo texto que estaba fijo en el código antes de
 // conectar con WordPress.
 const DEFAULT_HERO: Hero = {
-  image: '/hero-villa.jpg',
+  images: ['/hero-villa.jpg'],
   imageAlt: 'Piscina infinita frente al mar en una villa de Coco B Isla',
   eyebrow: 'A Luxury Experience',
   heading: 'In Isla Mujeres',
@@ -415,9 +420,16 @@ export async function getHero(): Promise<Hero> {
   const acf = posts?.[0]?.acf;
   if (!acf) return DEFAULT_HERO;
 
-  const image = await resolveMediaUrl(acf.hero_image);
+  // Hasta 5 fotos para el carrusel del hero — la primera es la única
+  // obligatoria (siempre existió como "hero_image"), las demás son
+  // opcionales y se agregan en el orden en que están cargadas.
+  const imageIds = [acf.hero_image, acf.hero_image_2, acf.hero_image_3, acf.hero_image_4, acf.hero_image_5].filter(
+    (id): id is number => Boolean(id),
+  );
+  const images = (await Promise.all(imageIds.map(resolveMediaUrl))).filter((url): url is string => Boolean(url));
+
   return {
-    image: image ?? DEFAULT_HERO.image,
+    images: images.length > 0 ? images : DEFAULT_HERO.images,
     imageAlt: acf.hero_image_alt || DEFAULT_HERO.imageAlt,
     eyebrow: acf.hero_eyebrow || DEFAULT_HERO.eyebrow,
     heading: acf.hero_heading || DEFAULT_HERO.heading,

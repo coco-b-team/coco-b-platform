@@ -151,7 +151,7 @@ export type AboutContent = {
 };
 
 export type Hero = {
-  image: string | null;
+  images: string[];
   imageAlt: string;
   eyebrow: string;
   heading: string;
@@ -202,6 +202,11 @@ export type WPVillaAcf = {
   gallery_image_3: number | null;
   gallery_image_4: number | null;
   gallery_image_5: number | null;
+  gallery_image_6: number | null;
+  gallery_image_7: number | null;
+  gallery_image_8: number | null;
+  gallery_image_9: number | null;
+  gallery_image_10: number | null;
 };
 
 export type WPRetreatAcf = {
@@ -276,6 +281,10 @@ export type WPContactAcf = {
 
 export type WPHeroAcf = {
   hero_image: number | null;
+  hero_image_2: number | null;
+  hero_image_3: number | null;
+  hero_image_4: number | null;
+  hero_image_5: number | null;
   hero_image_alt: string;
   hero_eyebrow: string;
   hero_heading: string;
