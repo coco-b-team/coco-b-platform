@@ -16,7 +16,7 @@ export function VillaGallery({ images, alt }: { images: string[]; alt: string })
         <Image src={images[active]} alt={alt} fill sizes="(min-width: 640px) 700px, 100vw" className="object-cover" priority />
       </div>
       {images.length > 1 && (
-        <div className="mt-3 flex gap-3">
+        <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
           {images.map((src, i) => (
             <button
               key={`${i}-${src}`}

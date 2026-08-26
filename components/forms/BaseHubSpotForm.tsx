@@ -10,10 +10,25 @@ export function BaseHubSpotForm({
   formType,
   children,
   submitLabel = 'Enviar',
+  showSubmitButton = true,
+  onSuccess,
+  hideTurnstile = false,
 }: {
   formType: HubSpotFormType;
   children: ReactNode;
   submitLabel?: string;
+  // Usados por flujos multi-paso (ej. el modal de reserva de villa): el
+  // botón de enviar solo se muestra en el último paso, y `onSuccess` deja
+  // que el componente padre arme su propia pantalla de confirmación en
+  // vez de depender del mensaje genérico de acá abajo.
+  showSubmitButton?: boolean;
+  onSuccess?: () => void;
+  // Igual que showSubmitButton: en un flujo multi-paso no tiene sentido
+  // mostrar el widget anti-spam antes de llegar al paso final. Se
+  // desmonta (no solo se oculta con CSS) — Turnstile calcula el tamaño de
+  // su iframe al montarse, y si el contenedor arranca en display:none
+  // queda con tamaño cero y no vuelve a dibujarse bien al mostrarlo.
+  hideTurnstile?: boolean;
 }) {
   const [token, setToken] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success'>('idle');
@@ -54,6 +69,7 @@ export function BaseHubSpotForm({
       setStatus('success');
       setToken('');
       turnstile.current?.reset();
+      onSuccess?.();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Ocurrió un error.');
       setStatus('idle');
@@ -69,16 +85,18 @@ export function BaseHubSpotForm({
         <label htmlFor={`${formType}-website`}>Website</label>
         <input id={`${formType}-website`} name="website" type="text" tabIndex={-1} autoComplete="off" />
       </div>
-      <Turnstile onToken={setToken} handleRef={turnstile} />
+      {!hideTurnstile && <Turnstile onToken={setToken} handleRef={turnstile} />}
       {error && <FormError message={error} />}
       {status === 'success' && (
         <p role="status" className="rounded-lg bg-background-tint px-4 py-3 text-primary">
           ¡Gracias! Recibimos tu información.
         </p>
       )}
-      <Button type="submit" disabled={status === 'sending'}>
-        {status === 'sending' ? 'Enviando…' : submitLabel}
-      </Button>
+      {showSubmitButton && (
+        <Button type="submit" disabled={status === 'sending'}>
+          {status === 'sending' ? 'Enviando…' : submitLabel}
+        </Button>
+      )}
     </form>
   );
 }
