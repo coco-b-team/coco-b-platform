@@ -5,6 +5,7 @@ import { isFormType } from '@/lib/hubspot/schemas';
 import { validatePayload } from '@/lib/hubspot/validate';
 import { verifyTurnstile } from '@/lib/hubspot/turnstile';
 import { submitToHubSpot } from '@/lib/hubspot/submit';
+import { sendConfirmationEmail } from '@/lib/email/confirmation';
 
 type RouteContext = { params: Promise<{ formType: string }> };
 
@@ -55,6 +56,13 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       pageUri: typeof body.pageUri === 'string' ? body.pageUri.slice(0, 500) : undefined,
       pageName: typeof body.pageName === 'string' ? body.pageName.slice(0, 200) : undefined,
     });
+
+    try {
+      await sendConfirmationEmail(formType, data);
+    } catch (emailError) {
+      // El registro ya quedó guardado en HubSpot; no hacemos fallar la solicitud.
+      console.error(`[email] ${formType}`, emailError);
+    }
     return NextResponse.json({ ok: true });
   } catch (submissionError) {
     console.error(`[hubspot] ${formType}`, submissionError);

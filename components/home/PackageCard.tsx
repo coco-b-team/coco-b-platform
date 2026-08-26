@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/Card';
 import { SplitCardImage } from '@/components/ui/SplitCardImage';
-import { Button } from '@/components/ui/Button';
 import { ReadMoreButton, type QuickViewItem } from '@/components/villas/ReadMoreButton';
+import { VillaInquireButton } from '@/components/villas/VillaInquireButton';
 import { VillaSpecs } from '@/components/villas/VillaSpecs';
 import { formatPackagePrice } from '@/lib/villas';
 import type { Package } from '@/lib/wp/types';
@@ -36,9 +36,18 @@ export function PackageCard({
 
         <div className="mt-auto flex gap-3 pt-2">
           <ReadMoreButton items={quickViewItems} index={quickViewIndex} />
-          <Button href={`/packages/${pkg.slug}#inquiry`} variant="primary">
-            Inquire
-          </Button>
+          <VillaInquireButton
+            villa={{
+              id: `package-${pkg.slug}`,
+              title: pkg.title,
+              mainImage: pkg.mainImage,
+              startingPrice: pkg.startingPrice,
+              priceUnit: 'night',
+              priceOnRequest: !pkg.startingPrice,
+              guestCapacity: pkg.guestCapacity,
+              bedrooms: pkg.bedrooms,
+            }}
+          />
         </div>
       </div>
     </Card>

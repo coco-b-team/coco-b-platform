@@ -11,6 +11,10 @@ export type ChatMessage = {
 // pena reintentar una vez antes de darnos por vencidos.
 const RETRYABLE_STATUS = new Set([503, 429]);
 const RETRY_DELAY_MS = 1500;
+// Sin esto, si Gemini (o la red hacia Gemini) se cuelga, el fetch no
+// falla nunca por su cuenta — el usuario se queda viendo "Escribiendo…"
+// indefinidamente en vez de un error claro.
+const GEMINI_TIMEOUT_MS = 20000;
 
 async function callGemini(apiKey: string, systemInstruction: string, history: ChatMessage[]) {
   return fetch(`${GEMINI_URL}?key=${apiKey}`, {
@@ -24,6 +28,7 @@ async function callGemini(apiKey: string, systemInstruction: string, history: Ch
       // la respuesta visible puede salir cortada a mitad de frase.
       generationConfig: { maxOutputTokens: 1024, temperature: 0.6 },
     }),
+    signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
   });
 }
 

@@ -3,8 +3,9 @@ import { generateChatReply, type ChatMessage } from '@/lib/ai/gemini';
 import { buildSystemPrompt } from '@/lib/ai/systemPrompt';
 import { isRateLimited, isGlobalRateLimited } from '@/lib/ai/rateLimit';
 import { looksLikeInjectionAttempt } from '@/lib/ai/promptGuard';
-import { getVillaSummaries } from '@/lib/wp/client';
+import { getVillaSummaries, getVillas } from '@/lib/wp/client';
 import { isSameOrigin, getClientKey } from '@/lib/security/sameOrigin';
+import { findMentionedVilla } from '@/lib/villas';
 
 const MAX_MESSAGE_LENGTH = 1000;
 const MAX_HISTORY = 20;
@@ -80,7 +81,15 @@ export async function POST(req: NextRequest) {
   try {
     const systemInstruction = await getSystemPrompt();
     const reply = await generateChatReply(systemInstruction, trimmedHistory);
-    return NextResponse.json({ reply });
+
+    // Si la respuesta menciona a una sola villa por nombre, se le suma su
+    // tarjeta (foto, specs, precio) — misma info que ya usa el
+    // recomendador, solo que acá se dispara por texto libre en vez de un
+    // flujo guiado.
+    const villas = await getVillas();
+    const mentionedVilla = findMentionedVilla(reply, villas);
+
+    return NextResponse.json(mentionedVilla ? { reply, villa: mentionedVilla } : { reply });
   } catch (error) {
     console.error('[chat] error al generar respuesta', error);
     return NextResponse.json(

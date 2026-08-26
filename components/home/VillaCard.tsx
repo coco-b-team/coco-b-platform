@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/Card';
 import { CardCarousel } from '@/components/ui/CardCarousel';
-import { Button } from '@/components/ui/Button';
 import { ReadMoreButton, type QuickViewItem } from '@/components/villas/ReadMoreButton';
+import { VillaInquireButton } from '@/components/villas/VillaInquireButton';
 import { VillaSpecs } from '@/components/villas/VillaSpecs';
 import { formatVillaPrice, villaImages } from '@/lib/villas';
 import type { Villa } from '@/lib/wp/types';
@@ -36,9 +36,18 @@ export function VillaCard({
 
         <div className="mt-auto flex gap-3 pt-2">
           <ReadMoreButton items={quickViewItems} index={quickViewIndex} />
-          <Button href={`/villas/${villa.slug}#inquiry`} variant="primary">
-            Inquire
-          </Button>
+          <VillaInquireButton
+            villa={{
+              id: villa.id,
+              title: villa.title,
+              mainImage: villa.mainImage,
+              startingPrice: villa.startingPrice,
+              priceUnit: villa.priceUnit,
+              priceOnRequest: villa.priceOnRequest,
+              guestCapacity: villa.guestCapacity,
+              bedrooms: villa.bedrooms,
+            }}
+          />
         </div>
       </div>
     </Card>

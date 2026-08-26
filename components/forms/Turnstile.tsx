@@ -43,8 +43,21 @@ export function Turnstile({
   };
 
   useEffect(() => {
+    // El script de Cloudflare solo se inserta una vez por página — en un
+    // segundo montaje (ej. cerrar y volver a abrir el modal de reserva),
+    // el <Script> de next/script no siempre vuelve a disparar onLoad/onReady
+    // porque ya estaba cargado de antes. Acá se cubre ese caso: si
+    // `window.turnstile` ya existe al montar, se renderiza directamente en
+    // vez de esperar un callback que puede no volver a llegar.
+    if (window.turnstile) render();
     return () => {
+      // Sin resetear widgetId acá, un remount posterior del componente (ya
+      // sea por Strict Mode en desarrollo, o por un flujo multi-paso que
+      // desmonta y vuelve a montar Turnstile) encuentra la ref todavía
+      // apuntando al widget viejo y `render()` nunca vuelve a crear uno
+      // nuevo — el widget queda "removido" pero invisible para siempre.
       if (widgetId.current) window.turnstile?.remove(widgetId.current);
+      widgetId.current = null;
       if (handleRef) handleRef.current = null;
     };
   }, [handleRef]);

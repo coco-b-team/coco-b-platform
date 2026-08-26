@@ -22,6 +22,15 @@ export async function VillaCollection({ villas }: { villas: Villa[] }) {
     price: formatVillaPrice(villa),
     description: villa.longDescription || villa.shortDescription,
     specs: { guestCapacity: villa.guestCapacity, bedrooms: villa.bedrooms, bathrooms: villa.bathrooms },
+    villaBooking: {
+      id: villa.id,
+      mainImage: villa.mainImage,
+      startingPrice: villa.startingPrice,
+      priceUnit: villa.priceUnit,
+      priceOnRequest: villa.priceOnRequest,
+      guestCapacity: villa.guestCapacity,
+      bedrooms: villa.bedrooms,
+    },
   }));
 
   return (

@@ -33,6 +33,15 @@ export function MixAndMatch({ packages, villas }: { packages: Package[]; villas:
     price: formatPackagePrice(combo.startingPrice),
     description: combo.longDescription || combo.shortDescription,
     specs: { guestCapacity: combo.guestCapacity, bedrooms: combo.bedrooms, bathrooms: combo.bathrooms },
+    villaBooking: {
+      id: `package-${combo.slug}`,
+      mainImage: combo.mainImage,
+      startingPrice: combo.startingPrice,
+      priceUnit: 'night',
+      priceOnRequest: !combo.startingPrice,
+      guestCapacity: combo.guestCapacity,
+      bedrooms: combo.bedrooms,
+    },
   }));
 
   return (

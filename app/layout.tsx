@@ -3,6 +3,7 @@ import { Raleway } from 'next/font/google';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ChatWidget } from '@/components/chat/ChatWidget';
+import { SplashScreen } from '@/components/layout/SplashScreen';
 import './globals.css';
 
 const raleway = Raleway({
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${raleway.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        <SplashScreen />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
