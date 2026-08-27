@@ -1,0 +1,248 @@
+{
+  "common": {
+    "inquire": "Inquire",
+    "readMore": "Read More",
+    "startingFrom": "Starting From",
+    "priceOnRequest": "Price on request",
+    "fromPricePerUnit": "From ${price}/{unit}",
+    "fromPricePerUnitWithTaxes": "From ${price}/{unit} + taxes",
+    "night": "night",
+    "nights": "{count, plural, one {# night} other {# nights}}",
+    "close": "Close",
+    "previous": "Previous",
+    "next": "Next",
+    "seeAlso": "See also",
+    "singleVilla": "Single Villa",
+    "villa": "Villa"
+  },
+  "languageSwitcher": {
+    "label": "Change language"
+  },
+  "nav": {
+    "villas": "Villas",
+    "mixMatch": "Mix & Match",
+    "about": "About Us",
+    "homeAriaLabel": "Coco B Isla — home",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "brandName": "Coco B Isla",
+    "location": "Isla Mujeres, Mexico"
+  },
+  "splash": {
+    "tagline": "A Luxury Experience",
+    "location": "Isla Mujeres · Mexico"
+  },
+  "footer": {
+    "privacyPolicy": "Privacy Policy"
+  },
+  "chat": {
+    "welcome": "Hi! I'm the Coco B Isla concierge. How can I help you plan your stay?",
+    "quickReply": {
+      "viewVillas": "View villas",
+      "howToBook": "How do I book?",
+      "recommend": "Recommend a villa for me"
+    },
+    "groupSize": {
+      "g1": "1–4 guests",
+      "g2": "5–8 guests",
+      "g3": "9–14 guests",
+      "g4": "15+ guests"
+    },
+    "interest": {
+      "family": "Family or group",
+      "wedding": "Wedding or event",
+      "corporate": "Corporate retreat",
+      "wellness": "Wellness & relaxation"
+    },
+    "askGroupSize": "Happy to help! How many guests will be staying?",
+    "askInterest": "What are you mainly looking for in your stay?",
+    "recommendationIntro": "Based on what you've told me, here's my recommendation:",
+    "errorGeneric": "We couldn't respond right now. Please try again in a bit.",
+    "errorRecommend": "We couldn't generate a recommendation right now. Please try again in a bit.",
+    "typing": "Typing…",
+    "retry": "Retry",
+    "inputPlaceholder": "Type your message…",
+    "inputAriaLabel": "Type your message to the concierge",
+    "sendAriaLabel": "Send message",
+    "closeSuggestionAriaLabel": "Close suggestion",
+    "greeting": "Need help planning your stay in Isla Mujeres?",
+    "openChatAriaLabel": "Open chat with the Coco B Isla concierge",
+    "conciergeLabel": "Concierge",
+    "closeChatAriaLabel": "Close chat",
+    "panelAriaLabel": "Chat with the Coco B Isla concierge",
+    "headerTitle": "Coco B Concierge",
+    "logAriaLabel": "Conversation with the concierge",
+    "villaResult": {
+      "singleVilla": "Single Villa",
+      "viewVilla": "View villa",
+      "priceOnRequest": "Price on request"
+    }
+  },
+  "forms": {
+    "common": {
+      "sending": "Sending…",
+      "send": "Send",
+      "turnstileMissing": "Turnstile isn't configured.",
+      "verifyAntiSpam": "Please complete the anti-spam verification.",
+      "genericError": "We couldn't submit the form.",
+      "genericSuccess": "Thank you! We've received your information.",
+      "websiteLabel": "Website"
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone"
+    }
+  },
+  "waitlist": {
+    "eyebrow": "Be the first to know",
+    "title": "Pop-up hotel waitlist",
+    "intro": "Join the list and we will let you know when new dates become available.",
+    "submitLabel": "Join the list",
+    "phoneOptional": "Phone (optional)",
+    "preferredDates": "Preferred dates",
+    "guests": "Guests",
+    "consent": "I agree to receive news and availability about the pop-up hotel."
+  },
+  "dateRangePicker": {
+    "checkInDate": "Check-in date",
+    "checkOutDate": "Check-out date",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "flexibleDates": "Flexible dates?",
+    "numberOfGuests": "Number of guests",
+    "decreaseGuests": "Fewer guests",
+    "increaseGuests": "More guests"
+  },
+  "inquiryModal": {
+    "villaEyebrow": "Villa",
+    "requestSentAriaLabel": "Request sent",
+    "reserveAriaLabel": "Book {name}",
+    "close": "Close",
+    "thankYouTitle": "Thank you for your interest.",
+    "thankYouBody": "Our Coco B Isla team will reach out to you within 24 hours.",
+    "sendRequest": "Send request",
+    "step1": "Plan your stay · Step 1 of 2",
+    "step2": "Plan your stay · Step 2 of 2",
+    "next": "Next",
+    "exit": "Exit",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "E-mail",
+    "phoneNumber": "Phone number",
+    "countryCodeAriaLabel": "Country code",
+    "searchCountryPlaceholder": "Search country…",
+    "noMatches": "No matches.",
+    "phonePlaceholder": "xx-xxxx-xxxx",
+    "howDidYouHear": "How did you hear about us?",
+    "selectOption": "Select an option",
+    "referral": {
+      "google": "Google search",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "friend": "Referral from a friend",
+      "travelAgent": "Travel agent",
+      "press": "Press or magazine",
+      "other": "Other"
+    },
+    "message": "Message or notes",
+    "smsConsent": "I agree to receive information related to my request via SMS.",
+    "nights": "{count, plural, one {# night} other {# nights}}",
+    "total": "Total: ${amount} +21% taxes"
+  },
+  "mixMatch": {
+    "heading": "Mix & Match",
+    "description": "Pair two side-by-side villas for larger groups. Each combination gives you double the space, two pools, and a seamlessly shared stretch of private beachfront.",
+    "combinedPackage": "Combined Package"
+  },
+  "villas": {
+    "pageTitle": "Our Villas",
+    "empty": "No villas available at this time.",
+    "specs": {
+      "guests": "{count, plural, one {Guest} other {Guests}}",
+      "bedrooms": "{count, plural, one {Bedroom} other {Bedrooms}}",
+      "bathrooms": "{count, plural, one {Bathroom} other {Bathrooms}}"
+    }
+  },
+  "villaDetail": {
+    "startingFrom": "Starting From",
+    "nightMinimum": "{count}-Night Minimum",
+    "planYourStay": "Plan your stay",
+    "requestTitle": "Request {name}",
+    "shareInfo": "Share your preferred dates and our team will get back to you within 24 hours."
+  },
+  "packageDetail": {
+    "combinedPackage": "Combined Package",
+    "includes": "This combination includes"
+  },
+  "prevNext": {
+    "previous": "Previous",
+    "next": "Next",
+    "seeAlso": "See also"
+  },
+  "about": {
+    "eyebrow": "About Us",
+    "sustainability": "Sustainability",
+    "alts": {
+      "aerial": "Aerial view of Isla Mujeres",
+      "loungeSunset": "Beachfront lounge at sunset",
+      "cove": "Rocky cove in Isla Mujeres",
+      "sailboat": "Sailboat on turquoise waters",
+      "coastSunset": "Isla Mujeres coastline at sunset",
+      "lighthouse": "Isla Mujeres lighthouse",
+      "terraceSunset": "Sunset from a Coco B Isla terrace"
+    }
+  },
+  "privacyPolicy": {
+    "eyebrow": "Coco B Isla",
+    "title": "Privacy Policy",
+    "sections": [
+      {
+        "heading": "SMS & WhatsApp Communications",
+        "body": "By providing your mobile phone number through our website, contact forms, booking inquiries, or other communication channels, you expressly consent to receive SMS and WhatsApp messages from Coco B Isla and Coco B Wellness regarding your inquiries, reservations, guest services, retreat information, promotions, special offers, event updates, and other communications related to our services."
+      },
+      {
+        "heading": "Message Frequency",
+        "body": "Message frequency may vary based on your interactions with us, booking status, and service requests."
+      },
+      {
+        "heading": "Message and Data Rates",
+        "body": "Standard message and data rates may apply according to your mobile carrier's plan."
+      },
+      {
+        "heading": "Opt-Out",
+        "body": "You may opt out of receiving SMS messages at any time by replying STOP to any text message. To stop receiving WhatsApp messages, reply STOP or contact us directly."
+      },
+      {
+        "heading": "Help",
+        "body": "For assistance, reply HELP to any SMS message or contact us at info@cocobisla.com."
+      },
+      {
+        "heading": "Consent Not Required",
+        "body": "Your consent to receive SMS or WhatsApp messages is not a condition of purchasing any product, accommodation, retreat, or service."
+      },
+      {
+        "heading": "Information Sharing",
+        "body": "Coco B Isla and Coco B Wellness do not sell, rent, or share your mobile phone number or messaging consent with third parties for their marketing purposes. We may share information with trusted service providers solely for the purpose of operating our business, managing reservations, customer service, and delivering communications on our behalf."
+      },
+      {
+        "heading": "Data Security",
+        "body": "We implement reasonable administrative, technical, and physical safeguards to protect your personal information from unauthorized access, disclosure, alteration, or destruction."
+      },
+      {
+        "heading": "Record of Consent",
+        "body": "We maintain records of consent and communication preferences as required by applicable laws and regulations."
+      },
+      {
+        "heading": "Changes to This Policy",
+        "body": "We reserve the right to update this policy from time to time. Any changes will be posted on this page with an updated effective date."
+      }
+    ]
+  },
+  "apiChat": {
+    "deflection": "I'm here to help with anything related to your stay at Coco B Isla. Do you have a question about our villas?",
+    "perIpLimit": "Let's slow down a moment — give me a second to catch my breath. Write to me again in a few minutes and we'll continue.",
+    "globalLimit": "I have quite a few people with me right now. Give me a moment, I'll be right back — try again in a minute."
+  }
+}

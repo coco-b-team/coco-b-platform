@@ -1,15 +1,19 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/Input';
 
 export const fieldClass =
   'rounded-lg border border-border px-4 py-2.5 text-text focus:border-primary focus:outline-none';
 
 export function ContactFields() {
+  const t = useTranslations('forms.fields');
   return (
     <div className="grid gap-5 sm:grid-cols-2">
-      <Input label="Nombre" name="first_name" required maxLength={100} />
-      <Input label="Apellido" name="last_name" required maxLength={100} />
-      <Input label="Email" name="email" type="email" required maxLength={254} />
-      <Input label="Teléfono" name="phone" type="tel" required maxLength={40} />
+      <Input label={t('firstName')} name="first_name" required maxLength={100} />
+      <Input label={t('lastName')} name="last_name" required maxLength={100} />
+      <Input label={t('email')} name="email" type="email" required maxLength={254} />
+      <Input label={t('phone')} name="phone" type="tel" required maxLength={40} />
     </div>
   );
 }

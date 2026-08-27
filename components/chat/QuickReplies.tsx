@@ -1,19 +1,21 @@
+export type QuickReplyOption = { id: string; label: string };
+
 export function QuickReplies({
   options,
   onSelect,
 }: {
-  options: string[];
-  onSelect: (label: string) => void;
+  options: QuickReplyOption[];
+  onSelect: (id: string) => void;
 }) {
   return (
     <div className="flex flex-wrap gap-2 px-4 pb-3">
-      {options.map((label) => (
+      {options.map((option) => (
         <button
-          key={label}
-          onClick={() => onSelect(label)}
+          key={option.id}
+          onClick={() => onSelect(option.id)}
           className="rounded-full border border-primary px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-background-tint"
         >
-          {label}
+          {option.label}
         </button>
       ))}
     </div>

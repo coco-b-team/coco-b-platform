@@ -1,9 +1,13 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { PackageCard } from './PackageCard';
 import { computeComboSpecs, formatPackagePrice } from '@/lib/villas';
 import type { Package, Villa } from '@/lib/wp/types';
 import type { QuickViewItem } from '@/components/villas/ReadMoreButton';
 
 export function MixAndMatch({ packages, villas }: { packages: Package[]; villas: Villa[] }) {
+  const t = useTranslations('mixMatch');
   // "Mix & Match" son combinaciones reales de dos villas — se filtra por
   // relatedVillas para no mostrar entradas del mismo tipo de contenido que
   // no son en realidad una combinación (ej. "Concierge Services").
@@ -27,7 +31,7 @@ export function MixAndMatch({ packages, villas }: { packages: Package[]; villas:
   const quickViewItems: QuickViewItem[] = combos.map((combo) => ({
     slug: combo.slug,
     href: `/packages/${combo.slug}`,
-    eyebrow: 'Combined Package',
+    eyebrow: t('combinedPackage'),
     title: combo.title,
     images: combo.galleryImages,
     price: formatPackagePrice(combo.startingPrice),
@@ -47,11 +51,8 @@ export function MixAndMatch({ packages, villas }: { packages: Package[]; villas:
   return (
     <section id="mix-match" className="mx-auto max-w-6xl scroll-mt-20 px-6 py-16 sm:px-10">
       <div className="sm:text-center">
-        <h2 className="font-body text-2xl font-normal">Mix & Match</h2>
-        <p className="mt-4 max-w-2xl text-text-muted sm:mx-auto">
-          Pair two side-by-side villas for larger groups. Each combination gives you double the
-          space, two pools, and a seamlessly shared stretch of private beachfront.
-        </p>
+        <h2 className="font-body text-2xl font-normal">{t('heading')}</h2>
+        <p className="mt-4 max-w-2xl text-text-muted sm:mx-auto">{t('description')}</p>
       </div>
       <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
         {combos.map((pkg, i) => (

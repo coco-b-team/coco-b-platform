@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 
 type NavItem = { href: string; title: string };
@@ -10,6 +13,7 @@ type NavItem = { href: string; title: string };
 // contenido). Circular: `prev`/`next` ya vienen resueltos con vuelta al
 // principio/final por quien arma la lista navegable.
 export function PrevNextNav({ prev, next }: { prev: NavItem | null; next: NavItem | null }) {
+  const t = useTranslations('prevNext');
   if (!prev && !next) return null;
 
   // Con solo 2 elementos en la lista (ej. hoy solo hay 2 combinaciones de
@@ -21,7 +25,7 @@ export function PrevNextNav({ prev, next }: { prev: NavItem | null; next: NavIte
       <div className="mt-12 border-t border-border pt-8 text-center">
         <Link href={next.href} className="group inline-flex items-center gap-3">
           <span>
-            <span className="block text-xs tracking-widest text-text-muted uppercase">See also</span>
+            <span className="block text-xs tracking-widest text-text-muted uppercase">{t('seeAlso')}</span>
             <span className="block font-medium text-text transition-colors group-hover:text-primary">
               {next.title}
             </span>
@@ -44,7 +48,7 @@ export function PrevNextNav({ prev, next }: { prev: NavItem | null; next: NavIte
             className="shrink-0 text-text-muted transition-colors group-hover:text-primary"
           />
           <span className="min-w-0">
-            <span className="block text-xs tracking-widest text-text-muted uppercase">Previous</span>
+            <span className="block text-xs tracking-widest text-text-muted uppercase">{t('previous')}</span>
             <span className="block truncate font-medium text-text transition-colors group-hover:text-primary">
               {prev.title}
             </span>
@@ -57,7 +61,7 @@ export function PrevNextNav({ prev, next }: { prev: NavItem | null; next: NavIte
       {next ? (
         <Link href={next.href} className="group flex min-w-0 items-center gap-3 text-right">
           <span className="min-w-0">
-            <span className="block text-xs tracking-widest text-text-muted uppercase">Next</span>
+            <span className="block text-xs tracking-widest text-text-muted uppercase">{t('next')}</span>
             <span className="block truncate font-medium text-text transition-colors group-hover:text-primary">
               {next.title}
             </span>
