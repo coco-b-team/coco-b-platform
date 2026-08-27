@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, ReactNode, useRef, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormError';
 import { Turnstile, type TurnstileHandle } from './Turnstile';
@@ -34,6 +34,14 @@ export function BaseHubSpotForm({
   const [status, setStatus] = useState<'idle' | 'sending' | 'success'>('idle');
   const [error, setError] = useState('');
   const turnstile = useRef<TurnstileHandle | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // Si el error queda fuera de la vista (formularios largos, como el paso 2
+  // de la reserva), que se note en vez de quedar escondido más abajo sin
+  // que nadie lo vea — le pasó justo esto a un usuario real.
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [error]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -86,14 +94,22 @@ export function BaseHubSpotForm({
         <input id={`${formType}-website`} name="website" type="text" tabIndex={-1} autoComplete="off" />
       </div>
       {!hideTurnstile && <Turnstile onToken={setToken} handleRef={turnstile} />}
-      {error && <FormError message={error} />}
+      {error && (
+        <div ref={errorRef}>
+          <FormError message={error} />
+        </div>
+      )}
       {status === 'success' && (
         <p role="status" className="rounded-lg bg-background-tint px-4 py-3 text-primary">
           ¡Gracias! Recibimos tu información.
         </p>
       )}
       {showSubmitButton && (
-        <Button type="submit" disabled={status === 'sending'}>
+        <Button
+          type="submit"
+          disabled={status === 'sending' || (!hideTurnstile && !token)}
+          className="disabled:cursor-not-allowed disabled:opacity-40"
+        >
           {status === 'sending' ? 'Enviando…' : submitLabel}
         </Button>
       )}

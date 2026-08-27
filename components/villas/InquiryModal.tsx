@@ -56,9 +56,18 @@ export function InquiryModal({ villa, onClose }: { villa: ModalVilla; onClose: (
   const [phoneNumber, setPhoneNumber] = useState('');
   const selectedCountry = COUNTRY_CODES.find((c) => c.iso2 === countryIso2) ?? COUNTRY_CODES[0];
   const exitingRef = useRef(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useBodyScrollLock(true);
   const trapRef = useFocusTrap(true);
+
+  // Los pasos 1 y 2 comparten el mismo contenedor con scroll (nunca se
+  // desmontan, solo se ocultan con CSS) — sin esto, si alguien scrollea
+  // dentro del paso 1 antes de avanzar, el paso 2 arranca mostrando esa
+  // misma posición en vez de su propio inicio.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [step]);
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setVisible(true));
@@ -119,7 +128,7 @@ export function InquiryModal({ villa, onClose }: { villa: ModalVilla; onClose: (
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6">
           {step === 'success' ? (
             <div className="flex flex-col items-center py-6 text-center">
               <Logo width={140} height={27} alt="Coco B Isla" />
