@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Raleway } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale } from 'next-intl/server';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ChatWidget } from '@/components/chat/ChatWidget';
@@ -17,19 +19,23 @@ export const metadata: Metadata = {
   description: 'Villas exclusivas en Isla Mujeres, México',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en" className={`${raleway.variable} h-full antialiased`}>
+    <html lang={locale} className={`${raleway.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <SplashScreen />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <ChatWidget />
+        <NextIntlClientProvider>
+          <SplashScreen />
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <ChatWidget />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

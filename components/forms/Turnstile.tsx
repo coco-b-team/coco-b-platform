@@ -2,6 +2,7 @@
 
 import Script from 'next/script';
 import { useEffect, useId, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 declare global {
   interface Window {
@@ -22,6 +23,7 @@ export function Turnstile({
   onToken: (token: string) => void;
   handleRef?: React.MutableRefObject<TurnstileHandle | null>;
 }) {
+  const t = useTranslations('forms.common');
   const id = `turnstile-${useId().replace(/:/g, '')}`;
   const widgetId = useRef<string | null>(null);
   const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -63,7 +65,7 @@ export function Turnstile({
   }, [handleRef]);
 
   if (!sitekey) {
-    return <p className="text-sm text-error">Turnstile no está configurado.</p>;
+    return <p className="text-sm text-error">{t('turnstileMissing')}</p>;
   }
 
   return (

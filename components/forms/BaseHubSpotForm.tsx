@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, ReactNode, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormError';
 import { Turnstile, type TurnstileHandle } from './Turnstile';
@@ -9,7 +10,7 @@ import type { HubSpotFormType } from '@/lib/hubspot/schemas';
 export function BaseHubSpotForm({
   formType,
   children,
-  submitLabel = 'Enviar',
+  submitLabel,
   showSubmitButton = true,
   onSuccess,
   hideTurnstile = false,
@@ -30,6 +31,7 @@ export function BaseHubSpotForm({
   // queda con tamaño cero y no vuelve a dibujarse bien al mostrarlo.
   hideTurnstile?: boolean;
 }) {
+  const t = useTranslations('forms.common');
   const [token, setToken] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success'>('idle');
   const [error, setError] = useState('');
@@ -46,7 +48,7 @@ export function BaseHubSpotForm({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
-    if (!token) return setError('Completa la verificación anti-spam.');
+    if (!token) return setError(t('verifyAntiSpam'));
 
     const form = event.currentTarget;
     const values = new FormData(form);
@@ -72,14 +74,14 @@ export function BaseHubSpotForm({
         }),
       });
       const result = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(result.error || 'No pudimos enviar el formulario.');
+      if (!response.ok) throw new Error(result.error || t('genericError'));
       form.reset();
       setStatus('success');
       setToken('');
       turnstile.current?.reset();
       onSuccess?.();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Ocurrió un error.');
+      setError(submitError instanceof Error ? submitError.message : t('genericError'));
       setStatus('idle');
       setToken('');
       turnstile.current?.reset();
@@ -90,7 +92,7 @@ export function BaseHubSpotForm({
     <form onSubmit={submit} className="flex flex-col gap-5">
       {children}
       <div className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
-        <label htmlFor={`${formType}-website`}>Website</label>
+        <label htmlFor={`${formType}-website`}>{t('websiteLabel')}</label>
         <input id={`${formType}-website`} name="website" type="text" tabIndex={-1} autoComplete="off" />
       </div>
       {!hideTurnstile && <Turnstile onToken={setToken} handleRef={turnstile} />}
@@ -101,7 +103,7 @@ export function BaseHubSpotForm({
       )}
       {status === 'success' && (
         <p role="status" className="rounded-lg bg-background-tint px-4 py-3 text-primary">
-          ¡Gracias! Recibimos tu información.
+          {t('genericSuccess')}
         </p>
       )}
       {showSubmitButton && (
@@ -110,7 +112,7 @@ export function BaseHubSpotForm({
           disabled={status === 'sending' || (!hideTurnstile && !token)}
           className="disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {status === 'sending' ? 'Enviando…' : submitLabel}
+          {status === 'sending' ? t('sending') : (submitLabel ?? t('send'))}
         </Button>
       )}
     </form>

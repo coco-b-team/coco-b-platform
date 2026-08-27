@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { estimateGuestCapacity } from '@/lib/villas';
 
 type Spec = { icon: string; value: number; label: string };
@@ -14,12 +17,13 @@ export function VillaSpecs({
   bathrooms: number | null;
   className?: string;
 }) {
+  const t = useTranslations('villas.specs');
   const guests = estimateGuestCapacity(guestCapacity, bedrooms);
 
   const specs: Spec[] = [
-    guests ? { icon: '/icons/guests.svg', value: guests, label: guests === 1 ? 'Guest' : 'Guests' } : null,
-    bedrooms ? { icon: '/icons/bed.svg', value: bedrooms, label: bedrooms === 1 ? 'Bedroom' : 'Bedrooms' } : null,
-    bathrooms ? { icon: '/icons/bath.svg', value: bathrooms, label: bathrooms === 1 ? 'Bathroom' : 'Bathrooms' } : null,
+    guests ? { icon: '/icons/guests.svg', value: guests, label: t('guests', { count: guests }) } : null,
+    bedrooms ? { icon: '/icons/bed.svg', value: bedrooms, label: t('bedrooms', { count: bedrooms }) } : null,
+    bathrooms ? { icon: '/icons/bath.svg', value: bathrooms, label: t('bathrooms', { count: bathrooms }) } : null,
   ].filter((s): s is Spec => s !== null);
 
   if (specs.length === 0) return null;

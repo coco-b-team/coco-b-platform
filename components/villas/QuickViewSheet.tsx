@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { FaChevronLeft, FaChevronRight, FaXmark } from 'react-icons/fa6';
 import { Button } from '@/components/ui/Button';
 import { VillaGallery } from '@/components/villas/VillaGallery';
@@ -49,6 +50,7 @@ export function QuickViewSheet({
   // la transición de Tailwind anime la entrada desde abajo en vez de
   // aparecer de golpe. Cerrar hace lo mismo al revés, esperando a que
   // termine la transición antes de desmontar la ficha.
+  const t = useTranslations('common');
   const [visible, setVisible] = useState(false);
   const [index, setIndex] = useState(initialIndex);
   const current = items[index];
@@ -84,7 +86,7 @@ export function QuickViewSheet({
   return createPortal(
     <div className="fixed inset-0 z-50">
       <button
-        aria-label="Cerrar"
+        aria-label={t('close')}
         className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
         onClick={handleClose}
       />
@@ -109,14 +111,14 @@ export function QuickViewSheet({
             {items.length > 1 && (
               <>
                 <button
-                  aria-label="Anterior"
+                  aria-label={t('previous')}
                   onClick={() => go(-1)}
                   className="flex h-9 w-9 items-center justify-center rounded-full text-text-muted hover:text-text"
                 >
                   <FaChevronLeft size={16} />
                 </button>
                 <button
-                  aria-label="Siguiente"
+                  aria-label={t('next')}
                   onClick={() => go(1)}
                   className="flex h-9 w-9 items-center justify-center rounded-full text-text-muted hover:text-text"
                 >
@@ -125,7 +127,7 @@ export function QuickViewSheet({
               </>
             )}
             <button
-              aria-label="Cerrar"
+              aria-label={t('close')}
               onClick={handleClose}
               className="ml-1 flex h-9 w-9 items-center justify-center text-text-muted hover:text-text"
             >
@@ -138,7 +140,7 @@ export function QuickViewSheet({
           <VillaGallery key={current.slug} images={current.images} alt={current.title} />
 
           <div className="mt-6 flex items-baseline justify-between border-b border-border pb-4">
-            <p className="text-xs tracking-widest text-text-muted uppercase">Starting From</p>
+            <p className="text-xs tracking-widest text-text-muted uppercase">{t('startingFrom')}</p>
             <p className="text-lg font-semibold">{current.price}</p>
           </div>
 
@@ -163,7 +165,7 @@ export function QuickViewSheet({
             />
           ) : (
             <Button href={`${current.href}#inquiry`} variant="primary" className="w-full">
-              Inquire
+              {t('inquire')}
             </Button>
           )}
         </div>

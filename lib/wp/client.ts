@@ -1,5 +1,12 @@
 import { WORDPRESS_API_URL } from './config';
 import { decodeHtmlEntities } from './utils';
+import {
+  getContentLocale,
+  getTranslatedList,
+  overlaySlug,
+  overlayId,
+  overlaySingleton,
+} from './translations';
 import type {
   Villa,
   VillaSummary,
@@ -30,10 +37,15 @@ import type {
 async function wpFetch<T>(path: string): Promise<T | null> {
   try {
     const res = await fetch(`${WORDPRESS_API_URL}${path}`, {
-      // 3 minutos — corto para que el equipo vea sus cambios de contenido
-      // rápido durante esta etapa de carga; se puede subir más cerca del
-      // lanzamiento, cuando el contenido deje de cambiar tan seguido.
-      next: { revalidate: 180 },
+      // 15 segundos — bajado de 180 (2026-08-27) para que los cambios en
+      // WordPress se vean casi al instante en las demos frente al jurado
+      // (editar un precio y refrescar, sin esperar 3 minutos). El sitio
+      // sigue protegido igual: nunca le pregunta a WordPress más de una vez
+      // por esta ventana, sin importar cuánta gente esté mirando a la vez.
+      // Ver Progreso_Proyecto.md para la alternativa que se evaluó
+      // (endpoint de revalidación bajo demanda) si esto llegara a no
+      // alcanzar más adelante.
+      next: { revalidate: 15 },
     });
     if (!res.ok) {
       console.error(`[wp] ${path} respondió ${res.status}`);
@@ -332,33 +344,44 @@ function bySortOrder<T extends { sortOrder: number }>(items: T[]): T[] {
 export async function getVillas(): Promise<Villa[]> {
   const posts = await wpFetch<WPPost<WPVillaAcf>[]>('/wp/v2/villa?per_page=100');
   if (!posts) return [];
-  return bySortOrder(await Promise.all(posts.map(mapVilla)));
+  const locale = await getContentLocale();
+  const villas = bySortOrder(await Promise.all(posts.map(mapVilla)));
+  return villas.map((v) => overlaySlug(v, locale, 'villa'));
 }
 
 export async function getVilla(slug: string): Promise<Villa | null> {
-  const posts = await wpFetch<WPPost<WPVillaAcf>[]>(`/wp/v2/villa?slug=${encodeURIComponent(slug)}`);
+  const posts = await wpFetch<WPPost<WPVillaAcf>[]>(
+    `/wp/v2/villa?slug=${encodeURIComponent(slug)}`,
+  );
   if (!posts || posts.length === 0) return null;
-  return mapVilla(posts[0]);
+  const locale = await getContentLocale();
+  return overlaySlug(await mapVilla(posts[0]), locale, 'villa');
 }
 
 export async function getVillaSummaries(): Promise<VillaSummary[]> {
   const posts = await wpFetch<WPPost<WPVillaAcf>[]>('/wp/v2/villa?per_page=100');
   if (!posts) return [];
+  const locale = await getContentLocale();
+  const translated = getTranslatedList(locale, 'villa');
   return [...posts]
-    .sort((a, b) => (toNumberOrNull(a.acf.sort_order) ?? 0) - (toNumberOrNull(b.acf.sort_order) ?? 0))
+    .sort(
+      (a, b) => (toNumberOrNull(a.acf.sort_order) ?? 0) - (toNumberOrNull(b.acf.sort_order) ?? 0),
+    )
     .map((post) => {
       const acf = post.acf;
+      const match = translated.find((v) => v.slug === post.slug) as
+        { title?: string; location?: string; shortDescription?: string } | undefined;
       return {
-        title: title(post),
+        title: match?.title ?? title(post),
         guestCapacity: toNumberOrNull(acf.guest_capacity),
         bedrooms: toNumberOrNull(acf.bedrooms),
         bathrooms: toNumberOrNull(acf.bathrooms),
-        location: acf.location ?? '',
+        location: match?.location ?? acf.location ?? '',
         startingPrice: toNumberOrNull(acf.starting_price),
         currency: acf.currency ?? 'USD',
         priceUnit: acf.price_unit ?? '',
         priceOnRequest: Boolean(acf.price_on_request),
-        shortDescription: acf.short_description ?? '',
+        shortDescription: match?.shortDescription ?? acf.short_description ?? '',
       };
     });
 }
@@ -370,7 +393,9 @@ export async function getRetreats(): Promise<Retreat[]> {
 }
 
 export async function getRetreat(slug: string): Promise<Retreat | null> {
-  const posts = await wpFetch<WPPost<WPRetreatAcf>[]>(`/wp/v2/retreat?slug=${encodeURIComponent(slug)}`);
+  const posts = await wpFetch<WPPost<WPRetreatAcf>[]>(
+    `/wp/v2/retreat?slug=${encodeURIComponent(slug)}`,
+  );
   if (!posts || posts.length === 0) return null;
   return mapRetreat(posts[0]);
 }
@@ -378,37 +403,50 @@ export async function getRetreat(slug: string): Promise<Retreat | null> {
 export async function getPackages(): Promise<Package[]> {
   const posts = await wpFetch<WPPost<WPPackageAcf>[]>('/wp/v2/package?per_page=100');
   if (!posts) return [];
-  return bySortOrder(await Promise.all(posts.map(mapPackage)));
+  const locale = await getContentLocale();
+  const packages = bySortOrder(await Promise.all(posts.map(mapPackage)));
+  return packages.map((p) => overlaySlug(p, locale, 'package'));
 }
 
 export async function getPackage(slug: string): Promise<Package | null> {
-  const posts = await wpFetch<WPPost<WPPackageAcf>[]>(`/wp/v2/package?slug=${encodeURIComponent(slug)}`);
+  const posts = await wpFetch<WPPost<WPPackageAcf>[]>(
+    `/wp/v2/package?slug=${encodeURIComponent(slug)}`,
+  );
   if (!posts || posts.length === 0) return null;
-  return mapPackage(posts[0]);
+  const locale = await getContentLocale();
+  return overlaySlug(await mapPackage(posts[0]), locale, 'package');
 }
 
 export async function getTestimonials(): Promise<Testimonial[]> {
   const posts = await wpFetch<WPPost<WPTestimonialAcf>[]>('/wp/v2/testimonial?per_page=100');
   if (!posts) return [];
-  return bySortOrder(await Promise.all(posts.map(mapTestimonial)));
+  const locale = await getContentLocale();
+  const testimonials = bySortOrder(await Promise.all(posts.map(mapTestimonial)));
+  return testimonials.map((t) => overlayId(t, locale, 'testimonial'));
 }
 
 export async function getFaqs(): Promise<Faq[]> {
   const posts = await wpFetch<WPPost<WPFaqAcf>[]>('/wp/v2/faq?per_page=100');
   if (!posts) return [];
-  return bySortOrder(posts.map(mapFaq));
+  const locale = await getContentLocale();
+  const faqs = bySortOrder(posts.map(mapFaq));
+  return faqs.map((f) => overlayId(f, locale, 'faq'));
 }
 
 export async function getServices(): Promise<Service[]> {
   const posts = await wpFetch<WPPost<WPServiceAcf>[]>('/wp/v2/servicio?per_page=100');
   if (!posts || posts.length === 0) return [];
-  return bySortOrder(posts.map(mapService));
+  const locale = await getContentLocale();
+  const services = bySortOrder(posts.map(mapService));
+  return services.map((s) => overlayId(s, locale, 'service'));
 }
 
 export async function getContacts(): Promise<Contact[]> {
   const posts = await wpFetch<WPPost<WPContactAcf>[]>('/wp/v2/contacto?per_page=100');
   if (!posts || posts.length === 0) return [];
-  return bySortOrder(posts.map(mapContact));
+  const locale = await getContentLocale();
+  const contacts = bySortOrder(posts.map(mapContact));
+  return contacts.map((c) => overlayId(c, locale, 'contact'));
 }
 
 export async function getHero(): Promise<Hero> {
@@ -423,39 +461,59 @@ export async function getHero(): Promise<Hero> {
   // Hasta 5 fotos para el carrusel del hero — la primera es la única
   // obligatoria (siempre existió como "hero_image"), las demás son
   // opcionales y se agregan en el orden en que están cargadas.
-  const imageIds = [acf.hero_image, acf.hero_image_2, acf.hero_image_3, acf.hero_image_4, acf.hero_image_5].filter(
-    (id): id is number => Boolean(id),
+  const imageIds = [
+    acf.hero_image,
+    acf.hero_image_2,
+    acf.hero_image_3,
+    acf.hero_image_4,
+    acf.hero_image_5,
+  ].filter((id): id is number => Boolean(id));
+  const images = (await Promise.all(imageIds.map(resolveMediaUrl))).filter((url): url is string =>
+    Boolean(url),
   );
-  const images = (await Promise.all(imageIds.map(resolveMediaUrl))).filter((url): url is string => Boolean(url));
 
-  return {
-    images: images.length > 0 ? images : DEFAULT_HERO.images,
-    imageAlt: acf.hero_image_alt || DEFAULT_HERO.imageAlt,
-    eyebrow: acf.hero_eyebrow || DEFAULT_HERO.eyebrow,
-    heading: acf.hero_heading || DEFAULT_HERO.heading,
-    villasHeading: acf.villas_heading || DEFAULT_HERO.villasHeading,
-    villasDescription: acf.villas_description || DEFAULT_HERO.villasDescription,
-  };
+  const locale = await getContentLocale();
+  return overlaySingleton(
+    {
+      images: images.length > 0 ? images : DEFAULT_HERO.images,
+      imageAlt: acf.hero_image_alt || DEFAULT_HERO.imageAlt,
+      eyebrow: acf.hero_eyebrow || DEFAULT_HERO.eyebrow,
+      heading: acf.hero_heading || DEFAULT_HERO.heading,
+      villasHeading: acf.villas_heading || DEFAULT_HERO.villasHeading,
+      villasDescription: acf.villas_description || DEFAULT_HERO.villasDescription,
+    },
+    locale,
+    'hero',
+  );
 }
 
 export async function getSiteLocation(): Promise<SiteLocation> {
   // Mismo motivo que en getHero(): orden explícito para que una segunda
   // entrada creada por error no gane por casualidad.
-  const posts = await wpFetch<WPPost<WPLocationAcf>[]>('/wp/v2/ubicacion?per_page=1&orderby=id&order=asc');
+  const posts = await wpFetch<WPPost<WPLocationAcf>[]>(
+    '/wp/v2/ubicacion?per_page=1&orderby=id&order=asc',
+  );
   const acf = posts?.[0]?.acf;
   if (!acf) return DEFAULT_LOCATION;
 
-  return {
-    heading: acf.location_heading || DEFAULT_LOCATION.heading,
-    description: acf.location_description || DEFAULT_LOCATION.description,
-    mapUrl: acf.location_map_url || DEFAULT_LOCATION.mapUrl,
-  };
+  const locale = await getContentLocale();
+  return overlaySingleton(
+    {
+      heading: acf.location_heading || DEFAULT_LOCATION.heading,
+      description: acf.location_description || DEFAULT_LOCATION.description,
+      mapUrl: acf.location_map_url || DEFAULT_LOCATION.mapUrl,
+    },
+    locale,
+    'siteLocation',
+  );
 }
 
 export async function getAwards(): Promise<Award[]> {
   const posts = await wpFetch<WPPost<WPAwardAcf>[]>('/wp/v2/award?per_page=100');
   if (!posts || posts.length === 0) return [];
-  return bySortOrder(await Promise.all(posts.map(mapAward)));
+  const locale = await getContentLocale();
+  const awards = bySortOrder(await Promise.all(posts.map(mapAward)));
+  return awards.map((a) => overlayId(a, locale, 'award'));
 }
 
 export async function getAbout(): Promise<AboutContent> {
@@ -468,57 +526,69 @@ export async function getAbout(): Promise<AboutContent> {
   const acf = posts?.[0]?.acf;
   if (!acf) return DEFAULT_ABOUT;
 
-  return {
-    heading: acf.about_heading || DEFAULT_ABOUT.heading,
-    triad: [
-      {
-        title: acf.triad_1_title || DEFAULT_ABOUT.triad[0].title,
-        body: acf.triad_1_body || DEFAULT_ABOUT.triad[0].body,
-      },
-      {
-        title: acf.triad_2_title || DEFAULT_ABOUT.triad[1].title,
-        body: acf.triad_2_body || DEFAULT_ABOUT.triad[1].body,
-      },
-      {
-        title: acf.triad_3_title || DEFAULT_ABOUT.triad[2].title,
-        body: acf.triad_3_body || DEFAULT_ABOUT.triad[2].body,
-      },
-    ],
-    story: acf.about_story || DEFAULT_ABOUT.story,
-    mission: acf.about_mission || DEFAULT_ABOUT.mission,
-    tagline: acf.about_tagline || DEFAULT_ABOUT.tagline,
-    sustainabilityHeading: acf.sustainability_heading || DEFAULT_ABOUT.sustainabilityHeading,
-    sustainabilityIntro: acf.sustainability_intro || DEFAULT_ABOUT.sustainabilityIntro,
-    sustainabilitySections: [
-      {
-        heading: acf.sustainability_section_1_heading || DEFAULT_ABOUT.sustainabilitySections[0].heading,
-        body: acf.sustainability_section_1_body || DEFAULT_ABOUT.sustainabilitySections[0].body,
-      },
-      {
-        heading: acf.sustainability_section_2_heading || DEFAULT_ABOUT.sustainabilitySections[1].heading,
-        body: acf.sustainability_section_2_body || DEFAULT_ABOUT.sustainabilitySections[1].body,
-      },
-      {
-        heading: acf.sustainability_section_3_heading || DEFAULT_ABOUT.sustainabilitySections[2].heading,
-        body: acf.sustainability_section_3_body || DEFAULT_ABOUT.sustainabilitySections[2].body,
-      },
-      {
-        heading: acf.sustainability_section_4_heading || DEFAULT_ABOUT.sustainabilitySections[3].heading,
-        body: acf.sustainability_section_4_body || DEFAULT_ABOUT.sustainabilitySections[3].body,
-      },
-      {
-        heading: acf.sustainability_section_5_heading || DEFAULT_ABOUT.sustainabilitySections[4].heading,
-        body: acf.sustainability_section_5_body || DEFAULT_ABOUT.sustainabilitySections[4].body,
-      },
-      {
-        heading: acf.sustainability_section_6_heading || DEFAULT_ABOUT.sustainabilitySections[5].heading,
-        body: acf.sustainability_section_6_body || DEFAULT_ABOUT.sustainabilitySections[5].body,
-      },
-      {
-        heading: acf.sustainability_section_7_heading || DEFAULT_ABOUT.sustainabilitySections[6].heading,
-        body: acf.sustainability_section_7_body || DEFAULT_ABOUT.sustainabilitySections[6].body,
-      },
-    ],
-    sustainabilityClosing: acf.sustainability_closing || DEFAULT_ABOUT.sustainabilityClosing,
-  };
+  const locale = await getContentLocale();
+  return overlaySingleton(
+    {
+      heading: acf.about_heading || DEFAULT_ABOUT.heading,
+      triad: [
+        {
+          title: acf.triad_1_title || DEFAULT_ABOUT.triad[0].title,
+          body: acf.triad_1_body || DEFAULT_ABOUT.triad[0].body,
+        },
+        {
+          title: acf.triad_2_title || DEFAULT_ABOUT.triad[1].title,
+          body: acf.triad_2_body || DEFAULT_ABOUT.triad[1].body,
+        },
+        {
+          title: acf.triad_3_title || DEFAULT_ABOUT.triad[2].title,
+          body: acf.triad_3_body || DEFAULT_ABOUT.triad[2].body,
+        },
+      ],
+      story: acf.about_story || DEFAULT_ABOUT.story,
+      mission: acf.about_mission || DEFAULT_ABOUT.mission,
+      tagline: acf.about_tagline || DEFAULT_ABOUT.tagline,
+      sustainabilityHeading: acf.sustainability_heading || DEFAULT_ABOUT.sustainabilityHeading,
+      sustainabilityIntro: acf.sustainability_intro || DEFAULT_ABOUT.sustainabilityIntro,
+      sustainabilitySections: [
+        {
+          heading:
+            acf.sustainability_section_1_heading || DEFAULT_ABOUT.sustainabilitySections[0].heading,
+          body: acf.sustainability_section_1_body || DEFAULT_ABOUT.sustainabilitySections[0].body,
+        },
+        {
+          heading:
+            acf.sustainability_section_2_heading || DEFAULT_ABOUT.sustainabilitySections[1].heading,
+          body: acf.sustainability_section_2_body || DEFAULT_ABOUT.sustainabilitySections[1].body,
+        },
+        {
+          heading:
+            acf.sustainability_section_3_heading || DEFAULT_ABOUT.sustainabilitySections[2].heading,
+          body: acf.sustainability_section_3_body || DEFAULT_ABOUT.sustainabilitySections[2].body,
+        },
+        {
+          heading:
+            acf.sustainability_section_4_heading || DEFAULT_ABOUT.sustainabilitySections[3].heading,
+          body: acf.sustainability_section_4_body || DEFAULT_ABOUT.sustainabilitySections[3].body,
+        },
+        {
+          heading:
+            acf.sustainability_section_5_heading || DEFAULT_ABOUT.sustainabilitySections[4].heading,
+          body: acf.sustainability_section_5_body || DEFAULT_ABOUT.sustainabilitySections[4].body,
+        },
+        {
+          heading:
+            acf.sustainability_section_6_heading || DEFAULT_ABOUT.sustainabilitySections[5].heading,
+          body: acf.sustainability_section_6_body || DEFAULT_ABOUT.sustainabilitySections[5].body,
+        },
+        {
+          heading:
+            acf.sustainability_section_7_heading || DEFAULT_ABOUT.sustainabilitySections[6].heading,
+          body: acf.sustainability_section_7_body || DEFAULT_ABOUT.sustainabilitySections[6].body,
+        },
+      ],
+      sustainabilityClosing: acf.sustainability_closing || DEFAULT_ABOUT.sustainabilityClosing,
+    },
+    locale,
+    'about',
+  );
 }

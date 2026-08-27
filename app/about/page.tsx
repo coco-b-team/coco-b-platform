@@ -1,19 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
 import { Button } from '@/components/ui/Button';
 import { getAbout } from '@/lib/wp/client';
-
-const MOSAIC_IMAGES = [
-  { src: '/images/about/about_1.webp', alt: 'Vista aérea de Isla Mujeres' },
-  { src: '/images/about/about_7.webp', alt: 'Lounge frente al mar al atardecer' },
-  { src: '/images/about/about_3.webp', alt: 'Cala rocosa en Isla Mujeres' },
-];
-
-const STRIP_IMAGES = [
-  { src: '/images/about/about_2.webp', alt: 'Velero en aguas turquesa' },
-  { src: '/images/about/about_6.webp', alt: 'Costa de Isla Mujeres al atardecer' },
-  { src: '/images/about/about_8.webp', alt: 'Faro de Isla Mujeres' },
-];
 
 export const metadata: Metadata = {
   title: 'About Us | Coco B Isla',
@@ -23,13 +12,27 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const about = await getAbout();
+  const t = await getTranslations('about');
+  const tCommon = await getTranslations('common');
   const storyParagraphs = about.story.split('\n\n');
   const closingParagraphs = about.sustainabilityClosing.split('\n\n');
+
+  const MOSAIC_IMAGES = [
+    { src: '/images/about/about_1.webp', alt: t('alts.aerial') },
+    { src: '/images/about/about_7.webp', alt: t('alts.loungeSunset') },
+    { src: '/images/about/about_3.webp', alt: t('alts.cove') },
+  ];
+
+  const STRIP_IMAGES = [
+    { src: '/images/about/about_2.webp', alt: t('alts.sailboat') },
+    { src: '/images/about/about_6.webp', alt: t('alts.coastSunset') },
+    { src: '/images/about/about_8.webp', alt: t('alts.lighthouse') },
+  ];
 
   return (
     <>
       <section className="mx-auto max-w-3xl px-6 py-16 sm:px-10">
-        <p className="text-xs tracking-widest text-text-muted uppercase">About Us</p>
+        <p className="text-xs tracking-widest text-text-muted uppercase">{t('eyebrow')}</p>
         <h1 className="font-body mt-1 text-3xl font-semibold">{about.heading}</h1>
 
         <div className="mt-10 grid grid-cols-1 gap-10 sm:grid-cols-3">
@@ -44,7 +47,7 @@ export default async function AboutPage() {
         <div className="relative mt-14 h-72 overflow-hidden rounded-2xl sm:h-96">
           <Image
             src="/images/about/about_5.webp"
-            alt="Atardecer desde una terraza de Coco B Isla"
+            alt={t('alts.terraceSunset')}
             fill
             sizes="(min-width: 640px) 768px, 100vw"
             className="object-cover"
@@ -61,14 +64,14 @@ export default async function AboutPage() {
         <div className="mt-12 flex flex-col items-center gap-6 border-t border-border pt-10 text-center">
           <p className="text-sm tracking-[0.3em] text-accent uppercase">{about.tagline}</p>
           <Button href="/villas" variant="primary">
-            Inquire
+            {tCommon('inquire')}
           </Button>
         </div>
       </section>
 
       <section className="bg-background-alt py-16">
         <div className="mx-auto max-w-3xl px-6 sm:px-10">
-          <p className="text-xs tracking-widest text-accent uppercase">Sustainability</p>
+          <p className="text-xs tracking-widest text-accent uppercase">{t('sustainability')}</p>
           <h2 className="font-body mt-1 text-2xl font-semibold">{about.sustainabilityHeading}</h2>
           <p className="mt-4 text-text-muted">{about.sustainabilityIntro}</p>
 
