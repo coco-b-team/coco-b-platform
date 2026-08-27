@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { FaFacebook, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa6';
 import { getContacts } from '@/lib/wp/client';
 import type { Contact } from '@/lib/wp/types';
@@ -20,6 +21,7 @@ const socialLinks = [
 ];
 
 export async function Footer() {
+  const t = await getTranslations('footer');
   const fetched = await getContacts();
   const contactBlocks = fetched.length > 0 ? fetched : FALLBACK_CONTACTS;
 
@@ -67,7 +69,7 @@ export async function Footer() {
 
         <div className="mt-12 flex flex-col gap-6 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/privacy-policy" className="text-text-muted hover:text-background">
-            Privacy Policy
+            {t('privacyPolicy')}
           </Link>
           <div className="flex gap-4">
             {socialLinks.map(({ href, label, Icon }) => (

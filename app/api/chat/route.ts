@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { generateChatReply, type ChatMessage } from '@/lib/ai/gemini';
 import { buildSystemPrompt } from '@/lib/ai/systemPrompt';
 import { isRateLimited, isGlobalRateLimited } from '@/lib/ai/rateLimit';
@@ -6,19 +7,11 @@ import { looksLikeInjectionAttempt } from '@/lib/ai/promptGuard';
 import { getVillaSummaries, getVillas } from '@/lib/wp/client';
 import { isSameOrigin, getClientKey } from '@/lib/security/sameOrigin';
 import { findMentionedVilla } from '@/lib/villas';
+import { LOCALE_LABELS, type Locale } from '@/lib/i18n/locales';
 
 const MAX_MESSAGE_LENGTH = 1000;
 const MAX_HISTORY = 20;
 const SCOPE = 'chat';
-
-const DEFLECTION_REPLY =
-  'Estoy aquí para ayudarte con todo lo relacionado a tu estadía en Coco B Isla. ¿Tienes alguna pregunta sobre nuestras villas?';
-
-const PER_IP_LIMIT_REPLY =
-  'Vamos con calma — dame un momento para tomar aire. Escríbeme de nuevo en unos minutos y seguimos con gusto.';
-
-const GLOBAL_LIMIT_REPLY =
-  'Tengo bastante gente conmigo en este momento. Dame un respiro, ya regreso — intenta de nuevo en un minuto.';
 
 // El system prompt es el mismo para todos los usuarios — se arma una vez y
 // se reusa por unos minutos en vez de reconstruirlo en cada mensaje.
@@ -35,15 +28,24 @@ async function getSystemPrompt(): Promise<string> {
   return value;
 }
 
+function localeHint(locale: Locale): string {
+  if (locale === 'en') return '';
+  const language = LOCALE_LABELS[locale];
+  return `\n\nEl visitante tiene el sitio configurado en ${language} — priorizá responder en ese idioma salvo que escriba claramente en otro.`;
+}
+
 export async function POST(req: NextRequest) {
   if (!isSameOrigin(req)) {
     return NextResponse.json({ error: 'Origen no permitido.' }, { status: 403 });
   }
 
+  const locale = (await getLocale()) as Locale;
+  const tApiChat = await getTranslations('apiChat');
+
   const clientKey = getClientKey(req);
   if (await isRateLimited(SCOPE, clientKey)) {
     console.warn(`[chat] límite por persona alcanzado (${clientKey})`);
-    return NextResponse.json({ reply: PER_IP_LIMIT_REPLY }, { status: 429 });
+    return NextResponse.json({ reply: tApiChat('perIpLimit') }, { status: 429 });
   }
 
   let body: { messages?: ChatMessage[] };
@@ -67,7 +69,7 @@ export async function POST(req: NextRequest) {
   // Filtro barato: si el mensaje intenta manipular al asistente de forma
   // obvia, respondemos sin gastar una llamada a Gemini.
   if (looksLikeInjectionAttempt(lastMessage.content)) {
-    return NextResponse.json({ reply: DEFLECTION_REPLY });
+    return NextResponse.json({ reply: tApiChat('deflection') });
   }
 
   // Cuota del sitio entero — protege la cuota gratuita de Gemini (muy
@@ -75,11 +77,15 @@ export async function POST(req: NextRequest) {
   // solo de un abuso puntual de una sola persona.
   if (await isGlobalRateLimited(SCOPE)) {
     console.warn('[chat] límite del sitio entero alcanzado');
-    return NextResponse.json({ reply: GLOBAL_LIMIT_REPLY }, { status: 429 });
+    return NextResponse.json({ reply: tApiChat('globalLimit') }, { status: 429 });
   }
 
   try {
-    const systemInstruction = await getSystemPrompt();
+    // El prompt base (villas) se cachea 5 min compartido entre todos los
+    // visitantes — el idioma NO se hornea ahí adentro (rompería con el
+    // primer visitante quedando pegado para todos); se concatena acá,
+    // por request, fuera de la parte cacheada.
+    const systemInstruction = (await getSystemPrompt()) + localeHint(locale);
     const reply = await generateChatReply(systemInstruction, trimmedHistory);
 
     // Si la respuesta menciona a una sola villa por nombre, se le suma su

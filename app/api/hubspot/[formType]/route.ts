@@ -6,6 +6,7 @@ import { validatePayload } from '@/lib/hubspot/validate';
 import { verifyTurnstile } from '@/lib/hubspot/turnstile';
 import { submitToHubSpot } from '@/lib/hubspot/submit';
 import { sendConfirmationEmail } from '@/lib/email/confirmation';
+import { addBookedRange } from '@/lib/wp/availability';
 
 type RouteContext = { params: Promise<{ formType: string }> };
 
@@ -44,7 +45,10 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
   const token = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
   const remoteIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
   if (!(await verifyTurnstile(token, remoteIp))) {
-    return NextResponse.json({ error: 'No pudimos verificar que seas una persona.' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'No pudimos verificar que seas una persona.' },
+      { status: 400 },
+    );
   }
 
   const { data, error } = validatePayload(formType, body.fields);
@@ -63,6 +67,23 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       // El registro ya quedó guardado en HubSpot; no hacemos fallar la solicitud.
       console.error(`[email] ${formType}`, emailError);
     }
+
+    // `villa_key` no es un campo del schema de HubSpot (no se manda a
+    // HubSpot a propósito) — se lee del payload crudo solo para saber qué
+    // calendario actualizar. Ver lib/wp/availability.ts para las
+    // limitaciones reales de esto (es una solicitud, no una reserva
+    // confirmada).
+    const fields = body.fields as Record<string, unknown> | undefined;
+    const villaKey = typeof fields?.villa_key === 'string' ? fields.villa_key : '';
+    if (formType === 'villa-wedding' && villaKey) {
+      try {
+        await addBookedRange(villaKey, String(data.check_in_date), String(data.check_out_date));
+      } catch (availabilityError) {
+        // El registro ya quedó guardado en HubSpot; no hacemos fallar la solicitud.
+        console.error('[availability] no se pudo actualizar el calendario', availabilityError);
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (submissionError) {
     console.error(`[hubspot] ${formType}`, submissionError);

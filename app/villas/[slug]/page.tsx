@@ -1,15 +1,21 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getVilla, getVillas } from '@/lib/wp/client';
 import { VillaGallery } from '@/components/villas/VillaGallery';
 import { VillaSpecs } from '@/components/villas/VillaSpecs';
 import { VillaInquireButton } from '@/components/villas/VillaInquireButton';
 import { PrevNextNav } from '@/components/ui/PrevNextNav';
 
-function formatPrice(startingPrice: number | null, priceUnit: string, priceOnRequest: boolean) {
-  if (priceOnRequest || !startingPrice) return 'Price on request';
+function formatPrice(
+  startingPrice: number | null,
+  priceUnit: string,
+  priceOnRequest: boolean,
+  tCommon: Awaited<ReturnType<typeof getTranslations>>,
+) {
+  if (priceOnRequest || !startingPrice) return tCommon('priceOnRequest');
   const price = new Intl.NumberFormat('en-US').format(startingPrice);
-  return `From $${price}/${priceUnit || 'night'} + taxes`;
+  return tCommon('fromPricePerUnitWithTaxes', { price, unit: priceUnit || tCommon('night') });
 }
 
 export async function generateMetadata({
@@ -30,6 +36,8 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
   const { slug } = await params;
   const [villa, allVillas] = await Promise.all([getVilla(slug), getVillas()]);
   if (!villa) notFound();
+  const t = await getTranslations('villaDetail');
+  const tCommon = await getTranslations('common');
 
   // mainImage y gallery ya vienen sin duplicados desde lib/wp/client.ts
   const images = [villa.mainImage, ...villa.gallery].filter((url): url is string => Boolean(url));
@@ -46,7 +54,7 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-16 sm:px-10">
-      <p className="text-xs tracking-widest text-text-muted uppercase">{villa.label || 'Villa'}</p>
+      <p className="text-xs tracking-widest text-text-muted uppercase">{villa.label || tCommon('villa')}</p>
       <h1 className="font-body mt-1 text-3xl font-semibold">{villa.title}</h1>
 
       <div className="mt-6">
@@ -55,9 +63,9 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
 
       <div className="mt-8 flex flex-wrap items-baseline justify-between gap-4 border-b border-border pb-6">
         <div>
-          <p className="text-xs tracking-widest text-text-muted uppercase">Starting From</p>
+          <p className="text-xs tracking-widest text-text-muted uppercase">{t('startingFrom')}</p>
           <p className="text-2xl font-semibold">
-            {formatPrice(villa.startingPrice, villa.priceUnit, villa.priceOnRequest)}
+            {formatPrice(villa.startingPrice, villa.priceUnit, villa.priceOnRequest, tCommon)}
           </p>
         </div>
         <VillaInquireButton
@@ -79,7 +87,7 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
           <VillaSpecs guestCapacity={villa.guestCapacity} bedrooms={villa.bedrooms} bathrooms={villa.bathrooms} />
           {(villa.minimumStayNights || villa.location) && (
             <div className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm tracking-wide text-text-muted uppercase">
-              {villa.minimumStayNights && <span>{villa.minimumStayNights}-Night Minimum</span>}
+              {villa.minimumStayNights && <span>{t('nightMinimum', { count: villa.minimumStayNights })}</span>}
               {villa.location && <span className="normal-case">{villa.location}</span>}
             </div>
           )}
@@ -94,11 +102,9 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
       />
 
       <div className="mt-12 rounded-2xl bg-background-alt px-6 py-12 text-center sm:px-12">
-        <p className="text-xs tracking-widest text-text-muted uppercase">Plan your stay</p>
-        <h2 className="font-body mt-2 text-3xl font-semibold">Request {villa.title}</h2>
-        <p className="mx-auto mt-3 max-w-md text-text-muted">
-          Share your preferred dates and our team will get back to you within 24 hours.
-        </p>
+        <p className="text-xs tracking-widest text-text-muted uppercase">{t('planYourStay')}</p>
+        <h2 className="font-body mt-2 text-3xl font-semibold">{t('requestTitle', { name: villa.title })}</h2>
+        <p className="mx-auto mt-3 max-w-md text-text-muted">{t('shareInfo')}</p>
         <div className="mt-7">
           <VillaInquireButton
             villa={{

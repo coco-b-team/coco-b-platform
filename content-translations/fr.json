@@ -1,0 +1,210 @@
+{
+  "villa": [
+    {
+      "slug": "casa-cielo",
+      "title": "Casa Cielo",
+      "label": "Villa Individuelle",
+      "shortDescription": "Ce bungalow intimiste de quatre chambres, entièrement rénové, dispose d'une piscine à débordement privée face à l'océan et offre les plus beaux couchers de soleil de l'île.",
+      "longDescription": "Cielo marie à merveille les espaces intérieurs et extérieurs, avec un séjour baigné de lumière donnant sur la piscine et une terrasse pour dîner en plein air. Chaque chambre de Cielo est une ode au luxe et au confort, avec ses carreaux, portes et meubles sur mesure. Le design unique de la propriété et son souci du détail en font une retraite idéale pour ceux qui recherchent tranquillité et beauté. Les hôtes peuvent se détendre sur la terrasse privée, profiter de vues imprenables sur l'océan ou savourer chaque matin un petit-déjeuner offert composé de viennoiseries fraîches, de fruits et d'autres mets adaptés à leurs préférences.",
+      "location": "Sac Bajo, Isla Mujeres",
+      "primaryCtaLabel": "Cliquez pour vous renseigner"
+    },
+    {
+      "slug": "casa-coco",
+      "title": "Casa Coco",
+      "label": "Villa Individuelle",
+      "shortDescription": "Casa Coco incarne une élégance bohème raffinée, avec une décoration à la fois décontractée et sophistiquée.",
+      "longDescription": "Casa Coco est idéale pour les grandes réunions de famille, les vacances entre amis, les mariages et les retraites de luxe, avec des villas, une décoration et un mobilier sur mesure qui reflètent la culture vibrante de l'île et de la région. La propriété Coco propose un exceptionnel service de conciergerie sur place ainsi que des expériences personnalisées, garantissant que chaque besoin soit comblé avec le plus grand soin. Les hôtes peuvent profiter d'une multitude de vues sur l'océan depuis la piscine à débordement privée, la terrasse sur le toit, les jardins aux chaises suspendues, la terrasse au-dessus de l'eau, l'embarcadère privé et l'accès à une plage isolée.",
+      "location": "Sac Bajo, Isla Mujeres",
+      "primaryCtaLabel": "Cliquez pour vous renseigner"
+    },
+    {
+      "slug": "villa-encantada",
+      "title": "Villa Encantada",
+      "label": "Villa Individuelle",
+      "shortDescription": "Premier joyau de la collection de villas Coco B, Villa Encantada allie à la perfection sophistication et élégance.",
+      "longDescription": "Des carreaux médaillons en pâte, coulés et polis à la main par des artisans locaux, ornent les murs et les sols, apportant une touche unique d'artisanat. Chacune des six chambres individuelles d'Encantada dispose de vasques en béton de style infini intégrées à la pierre, d'un lit à baldaquin dans la chambre principale et d'une baignoire îlot. La villa comprend un escalier flottant en béton blanc sur deux niveaux menant à un étage de type penthouse, coiffé de toits blanchis à la chaux façon Santorin. La cuisine et la salle à manger, entièrement rénovées, s'ouvrent par des portes coulissantes de 6 mètres de haut sur un espace de repas en plein air, un charmant salon abrité sous une palapa, la piscine et un bar extérieur. La piscine à débordement face à l'océan offre une vue à couper le souffle, complétée par une magnifique étendue de plage de sable.",
+      "location": "Sac Bajo, Isla Mujeres",
+      "primaryCtaLabel": "Cliquez pour vous renseigner"
+    },
+    {
+      "slug": "casa-lola",
+      "title": "Casa Lola",
+      "label": "Villa Individuelle",
+      "shortDescription": "Découvrez Casa Lola, la villa balnéaire la plus récente et la plus prisée de l'île. Elle compte sept suites exquises.",
+      "longDescription": "Ornée de carreaux personnalisés, de portes artisanales et de pièces de mobilier uniques, Casa Lola incarne un mélange parfait de luxe moderne et de charme mexicain. Pour les groupes plus importants, Casa Lola peut être combinée à sa villa sœur, Encantada, pour offrir un total de 13 suites. Les hôtes de Casa Lola profitent d'une piscine à débordement privée à l'eau salée, de vues envoûtantes sur l'océan, de nombreux espaces de détente et d'une plage de sable blanc exclusive. L'expérience est sublimée par l'exceptionnel service de conciergerie sur place de Coco B, garantissant que chaque besoin soit comblé avec le plus grand soin pour une escapade luxueuse et préservée.",
+      "location": "Sac Bajo, Isla Mujeres",
+      "primaryCtaLabel": "Cliquez pour vous renseigner"
+    }
+  ],
+  "package": [
+    {
+      "slug": "concierge-services",
+      "title": "Services de Conciergerie",
+      "shortDescription": "Complétez votre séjour avec des services sur place et des expériences sur demande.",
+      "longDescription": "Complétez votre séjour avec nos services sur place et nos expériences sur demande, notamment une conciergerie disponible 24h/24, du yoga et du bien-être, des transferts privés en bateau, des services de chef sur demande, l'organisation de mariages et d'événements, ainsi que des excursions et activités.",
+      "primaryCtaLabel": "RENSEIGNEZ-VOUS DÈS MAINTENANT"
+    },
+    {
+      "slug": "coco-cielo",
+      "title": "Coco & Cielo",
+      "shortDescription": "Deux villas sœurs partageant un accès privé à la plage. À combiner pour la retraite de groupe ultime.",
+      "longDescription": "Coco & Cielo peuvent être associées pour les groupes plus importants, offrant un total de 14 suites.",
+      "primaryCtaLabel": "RENSEIGNEZ-VOUS ICI"
+    },
+    {
+      "slug": "lola-encantada",
+      "title": "Lola & Encantada",
+      "shortDescription": "Deux villas sœurs partageant un accès privé à la plage. À combiner pour la retraite de groupe ultime.",
+      "longDescription": "Lola & Encantada peuvent être associées pour les groupes plus importants, offrant un total de 13 suites.",
+      "primaryCtaLabel": "RENSEIGNEZ-VOUS ICI"
+    }
+  ],
+  "testimonial": [
+    {
+      "id": 3003,
+      "quote": "Coco B n'est pas simplement un lieu, c'est un état d'esprit, et que vous recherchiez l'aventure, la détente ou un mélange des deux, cette retraite offre une expérience incomparable. Vous êtes destiné à tomber sous le charme de la magie d'Isla Mujeres, et l'histoire de Coco B laissera assurément une empreinte durable dans votre cœur.",
+      "authorDetail": "Luxury Travel Magazine"
+    },
+    {
+      "id": 3002,
+      "quote": "Tout à Coco B est absolument extraordinaire ! C'est tout simplement l'oasis tropicale parfaite pour une escapade insulaire. Le personnel est extrêmement professionnel et accueillant. Les propriétaires sont des personnes formidables qui ont mis tout leur cœur à faire de Coco B un lieu aussi chaleureux et accueillant, sans parler du design saisissant des villas. Et l'équipe culinaire est absolument sensationnelle ! Je vais rêver de ces repas pendant longtemps !",
+      "authorDetail": "Jacqueline Coleman"
+    },
+    {
+      "id": 3001,
+      "quote": "Chaque villa offre un saisissant équilibre entre beauté brute et confort raffiné, où objets locaux et textures superposées côtoient des équipements modernes et un service digne d'une conciergerie.",
+      "authorDetail": "Private Air Luxury"
+    }
+  ],
+  "faq": [
+    {
+      "id": 5023,
+      "question": "Comment les hôtes peuvent-ils se renseigner sur une villa ou un forfait ?",
+      "answer": "Les hôtes peuvent utiliser le bouton de demande de renseignements sur les villas et les forfaits pour connaître les disponibilités, les tarifs et obtenir de l'aide pour planifier leur séjour."
+    },
+    {
+      "id": 5022,
+      "question": "Quelles expériences peuvent être demandées pendant un séjour ?",
+      "answer": "Les hôtes peuvent demander des services de conciergerie, du yoga et du bien-être, des transferts privés en bateau, des services de chef, l'organisation de mariages et d'événements, ainsi que des excursions et activités."
+    },
+    {
+      "id": 5021,
+      "question": "Où se situe Coco B Isla ?",
+      "answer": "Coco B Isla se situe sur la péninsule de Sac Bajo, à Isla Mujeres, à environ 20 minutes en bateau des côtes de Cancún."
+    },
+    {
+      "id": 5020,
+      "question": "Est-il possible de combiner deux villas pour des groupes plus importants ?",
+      "answer": "Oui. Coco B Isla propose des options combinées pour les groupes plus importants, notamment Lola & Encantada avec 13 suites au total et Coco & Cielo avec 14 suites au total."
+    },
+    {
+      "id": 5001,
+      "question": "Quels services peuvent compléter un séjour en villa ?",
+      "answer": "Coco B Isla propose des services sur place et des expériences sur demande, notamment une conciergerie disponible 24h/24, du yoga et du bien-être, des transferts privés en bateau, des services de chef sur demande, l'organisation de mariages et d'événements, ainsi que des excursions et activités."
+    }
+  ],
+  "service": [
+    { "id": 5053, "label": "Excursions et Activités" },
+    { "id": 5052, "label": "Transferts Privés en Bateau" },
+    { "id": 5051, "label": "Mariages et Événements" },
+    { "id": 5050, "label": "Services de Chef" },
+    { "id": 5049, "label": "Yoga et Bien-être" },
+    { "id": 5048, "label": "Conciergerie 24h/24" }
+  ],
+  "contact": [
+    { "id": 5056, "title": "Conciergerie" },
+    { "id": 5055, "title": "Réservations" },
+    { "id": 5054, "title": "Groupes de Villas" }
+  ],
+  "award": [
+    {
+      "id": 5095,
+      "title": "Lauréat 2016",
+      "source": "Boutique Hotels Award",
+      "description": "Meilleur hôtel de villas privées"
+    },
+    {
+      "id": 5094,
+      "title": "Choix des Voyageurs",
+      "source": "Conde Nast Traveler",
+      "description": "Meilleur centre de retraite insulaire"
+    },
+    {
+      "id": 5093,
+      "title": "Meilleure Villa de Luxe",
+      "source": "Luxury Travel Magazine",
+      "description": "Édition Caraïbes et Mexique"
+    },
+    {
+      "id": 5092,
+      "title": "Choix des Voyageurs",
+      "source": "TripAdvisor",
+      "description": "Parmi les 10 % des meilleures propriétés au monde"
+    }
+  ],
+  "hero": {
+    "imageAlt": "Piscine à débordement face à l'océan dans une villa de Coco B Isla",
+    "eyebrow": "Une Expérience de Luxe",
+    "heading": "À Isla Mujeres",
+    "villasHeading": "Notre Collection de Villas",
+    "villasDescription": "Notre collection exclusive comprend quatre villas exquises : Lola, Encantada, Coco et Cielo. Chaque villa offre un mélange unique d'espaces de vie intérieurs et extérieurs, parfaits pour les familles, les amis, les retraites d'entreprise, les mariages ou les escapades bien-être. Avec un accès direct à des eaux calmes et des couchers de soleil à couper le souffle sur les Caraïbes, Coco B Isla Villas promet une expérience exceptionnelle et inoubliable."
+  },
+  "siteLocation": {
+    "heading": "Un Emplacement Privilégié",
+    "description": "À seulement 20 minutes en bateau des côtes de Cancún, vous trouverez Isla Mujeres, l'île des femmes, flottant dans les eaux bleu turquoise des Caraïbes. L'emplacement privilégié de Coco B Isla Villas vous permet de profiter d'une évasion digne d'une oasis, loin de l'agitation de la vie citadine, tout en restant à quelques minutes de la plage et d'expériences familiales."
+  },
+  "about": {
+    "heading": "Un Sanctuaire Caribéen",
+    "triad": [
+      {
+        "title": "Respirer",
+        "body": "Commencez votre journée par une profonde inspiration d'air pur et frais tout en contemplant les vues panoramiques sur la mer des Caraïbes depuis votre balcon privé. La sérénité de Coco B Isla vous aide à renouer avec le monde naturel."
+      },
+      {
+        "title": "Nourrir",
+        "body": "Nos services de chef veillent à ce que vos besoins et envies alimentaires soient satisfaits avec une attention exquise portée aux détails. Chaque repas est une expérience nourrissante conçue rien que pour vous, des smoothies détox aux dîners les plus raffinés."
+      },
+      {
+        "title": "S'Épanouir",
+        "body": "Laissez vos soucis s'envoler à mesure que vous traversez nos espaces au design somptueux. L'architecture de Coco B Isla marie harmonieusement les espaces intérieurs et extérieurs, créant une fluidité qui rehausse votre sentiment de bien-être."
+      }
+    ],
+    "story": "Depuis plus d'une décennie, nous rêvions de créer un magnifique sanctuaire caribéen où nos hôtes pourraient se détendre, se ressourcer et se plonger dans le confort, la tranquillité et un style intemporel. Un lieu où le stress se dissout dans le bleu magnifique de la mer, où les couchers de soleil vous coupent le souffle, et où le quotidien laisse place à une douce fragrance dans l'air du matin.\n\nBienvenue à Coco B Isla & Coco B Wellness, notre sanctuaire à Isla Mujeres, l'Île des Femmes. Cette île est la demeure d'Ixchel, la déesse maya de l'amour et de la fertilité, et l'une des plus belles îles des Caraïbes, célébrant les cultures mexicaine et maya au fil des eaux bleues cristallines des Caraïbes.\n\nQue vous choisissiez de ne rien faire du tout ou de vous immerger dans la culture magique de l'île et de la région, notre mission est de vous ravir. Coco B se consacre à offrir un magnifique sanctuaire de vacances de luxe et de bien-être où des hôtes partageant les mêmes valeurs pourront pratiquer, se détendre, se connecter et se délecter de la splendeur de notre environnement, de l'île et de la région.\n\nNous accueillons avec plaisir les instructeurs et les studios du monde entier souhaitant profiter de notre lieu de bien-être intimiste, ou vous invitons à rejoindre l'une de nos expériences de vacances axées sur le yoga et le bien-être.",
+    "mission": "Notre mission est d'offrir un bien-être intégratif inspirant dans un cadre à la fois ludique, apaisant, magnifique et ressourçant.",
+    "tagline": "Respirer · Nourrir · S'Épanouir",
+    "sustainabilityHeading": "La Durabilité chez Coco B Isla",
+    "sustainabilityIntro": "Chez Coco B Isla, nous nous engageons à préserver la beauté naturelle d'Isla Mujeres et à minimiser notre impact environnemental grâce à diverses pratiques durables. Notre engagement en matière de durabilité englobe tout, du compostage à l'engagement communautaire, pour offrir à nos hôtes une expérience toujours plus respectueuse de l'environnement.",
+    "sustainabilitySections": [
+      {
+        "heading": "Compostage et Jardinage Biologique",
+        "body": "Nous avons mis en place un système de compostage pour les déchets organiques de cuisine issus du restaurant et des repas de nos hôtes. Ce compost est ensuite utilisé dans notre jardin sur place, où nous cultivons herbes fraîches et fleurs. Cela réduit considérablement le besoin d'engrais externes et favorise un système en circuit fermé."
+      },
+      {
+        "heading": "Conservation de l'Eau",
+        "body": "Nous avons installé des équipements à faible débit dans toutes les douches, robinets et toilettes afin d'économiser l'eau. Nous utilisons également des puits d'eau passifs et des systèmes de récupération des eaux de pluie pour irriguer nos jardins, tirant ainsi le meilleur parti des ressources naturelles en eau."
+      },
+      {
+        "heading": "Engagement Communautaire",
+        "body": "Nous sommes fiers de collaborer avec des organisations locales pour promouvoir des initiatives de durabilité et célébrer le patrimoine culturel d'Isla Mujeres. Notre équipe participe activement à des programmes de nettoyage de l'île et à d'autres événements communautaires."
+      },
+      {
+        "heading": "Élimination des Déchets Plastiques",
+        "body": "Dans nos villas, les hôtes reçoivent à leur arrivée des bouteilles réutilisables offertes à l'effigie de la maison, qu'ils peuvent remplir aux stations d'eau purifiée réparties sur toute la propriété. Ces bouteilles sont également mises à disposition des clients de l'hôtel, une partie des recettes étant reversée à un orphelinat situé près de Cancún. Nous évitons strictement l'usage de bouteilles en plastique, en proposant chaque jour de l'eau purifiée dans des carafes en verre placées sur les tables de chevet, pour les hôtes des villas comme de l'hôtel."
+      },
+      {
+        "heading": "Approvisionnement Durable",
+        "body": "Nous nous approvisionnons localement et selon les saisons, en soutenant les producteurs locaux et en réduisant l'empreinte carbone liée au transport des marchandises. Nos produits d'entretien et de toilette sont écologiques, garantissant un impact environnemental minimal."
+      },
+      {
+        "heading": "Transport Écologique",
+        "body": "Nous encourageons nos hôtes à explorer l'île à vélo ou en louant des voiturettes de golf électriques, réduisant ainsi les émissions de carbone et favorisant une façon plus saine de se déplacer."
+      },
+      {
+        "heading": "Pratiques de Construction Écologique",
+        "body": "Nous utilisons des matériaux et des techniques de construction durables chaque fois que nous entreprenons de nouvelles constructions ou rénovations, et nos designs intègrent de nombreux matériaux produits et fournis localement. Nous concevons également nos espaces pour optimiser la ventilation et l'éclairage naturels, réduisant ainsi la consommation d'énergie et créant une atmosphère confortable et respectueuse de l'environnement."
+      }
+    ],
+    "sustainabilityClosing": "Chez Coco B Isla, nous nous consacrons à offrir une expérience de vacances à la fois luxueuse et durable.\n\nNous permettons à nos hôtes de se détendre et de se ressourcer, tout en soutenant et en protégeant notre magnifique environnement."
+  }
+}

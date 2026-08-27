@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { QuickViewSheet } from '@/components/villas/QuickViewSheet';
 import type { QuickViewItem } from '@/components/villas/QuickViewSheet';
@@ -28,6 +29,7 @@ function useIsCompact() {
 }
 
 export function ReadMoreButton({ items, index }: ReadMoreButtonProps) {
+  const t = useTranslations('common');
   const isCompact = useIsCompact();
   const [open, setOpen] = useState(false);
   const href = items[index].href;
@@ -35,7 +37,7 @@ export function ReadMoreButton({ items, index }: ReadMoreButtonProps) {
   if (!isCompact) {
     return (
       <Button href={href} variant="secondary">
-        Read More
+        {t('readMore')}
       </Button>
     );
   }
@@ -43,7 +45,7 @@ export function ReadMoreButton({ items, index }: ReadMoreButtonProps) {
   return (
     <>
       <Button variant="secondary" onClick={() => setOpen(true)}>
-        Read More
+        {t('readMore')}
       </Button>
       {open && <QuickViewSheet items={items} initialIndex={index} onClose={() => setOpen(false)} />}
     </>

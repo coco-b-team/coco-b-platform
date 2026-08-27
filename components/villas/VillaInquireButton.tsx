@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { InquiryModal } from './InquiryModal';
 
@@ -16,12 +17,13 @@ type ModalVilla = {
 };
 
 export function VillaInquireButton({ villa, className }: { villa: ModalVilla; className?: string }) {
+  const t = useTranslations('common');
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <Button variant="primary" onClick={() => setOpen(true)} className={className}>
-        Inquire
+        {t('inquire')}
       </Button>
       {open && <InquiryModal villa={villa} onClose={() => setOpen(false)} />}
     </>
