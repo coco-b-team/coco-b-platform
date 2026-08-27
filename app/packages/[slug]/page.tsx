@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
 import { FaChevronRight } from 'react-icons/fa6';
 import { getPackage, getPackages, getVillas } from '@/lib/wp/client';
 import { computeComboSpecs } from '@/lib/villas';
@@ -10,10 +11,10 @@ import { VillaSpecs } from '@/components/villas/VillaSpecs';
 import { VillaInquireButton } from '@/components/villas/VillaInquireButton';
 import { PrevNextNav } from '@/components/ui/PrevNextNav';
 
-function formatPrice(startingPrice: number | null) {
-  if (!startingPrice) return 'Price on request';
+function formatPrice(startingPrice: number | null, tCommon: Awaited<ReturnType<typeof getTranslations>>) {
+  if (!startingPrice) return tCommon('priceOnRequest');
   const price = new Intl.NumberFormat('en-US').format(startingPrice);
-  return `From $${price}/night + taxes`;
+  return tCommon('fromPricePerUnitWithTaxes', { price, unit: tCommon('night') });
 }
 
 export async function generateMetadata({
@@ -34,6 +35,9 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const [pkg, villas, packages] = await Promise.all([getPackage(slug), getVillas(), getPackages()]);
   if (!pkg) notFound();
+  const t = await getTranslations('packageDetail');
+  const tVillaDetail = await getTranslations('villaDetail');
+  const tCommon = await getTranslations('common');
 
   const relatedVillas = villas.filter((v) => pkg.relatedVillas.includes(v.id));
   const specs = computeComboSpecs(relatedVillas);
@@ -68,7 +72,7 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-16 sm:px-10">
-      <p className="text-xs tracking-widest text-text-muted uppercase">Combined Package</p>
+      <p className="text-xs tracking-widest text-text-muted uppercase">{t('combinedPackage')}</p>
       <h1 className="font-body mt-1 text-3xl font-semibold">{pkg.title}</h1>
 
       <div className="mt-6">
@@ -77,8 +81,8 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
 
       <div className="mt-8 flex flex-wrap items-baseline justify-between gap-4 border-b border-border pb-6">
         <div>
-          <p className="text-xs tracking-widest text-text-muted uppercase">Starting From</p>
-          <p className="text-2xl font-semibold">{formatPrice(pkg.startingPrice)}</p>
+          <p className="text-xs tracking-widest text-text-muted uppercase">{tVillaDetail('startingFrom')}</p>
+          <p className="text-2xl font-semibold">{formatPrice(pkg.startingPrice, tCommon)}</p>
         </div>
         <VillaInquireButton villa={inquireVilla} />
       </div>
@@ -90,7 +94,7 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
 
       {relatedVillas.length > 0 && (
         <div className="mt-10">
-          <p className="text-xs tracking-widest text-text-muted uppercase">This combination includes</p>
+          <p className="text-xs tracking-widest text-text-muted uppercase">{t('includes')}</p>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {relatedVillas.map((villa) => (
               <Link
@@ -104,7 +108,7 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs tracking-widest text-text-muted uppercase">{villa.label || 'Villa'}</p>
+                  <p className="text-xs tracking-widest text-text-muted uppercase">{villa.label || tCommon('villa')}</p>
                   <p className="truncate font-medium text-text transition-colors group-hover:text-primary">
                     {villa.title}
                   </p>
@@ -125,11 +129,9 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
       />
 
       <div className="mt-12 rounded-2xl bg-background-alt px-6 py-12 text-center sm:px-12">
-        <p className="text-xs tracking-widest text-text-muted uppercase">Plan your stay</p>
-        <h2 className="font-body mt-2 text-3xl font-semibold">Request {pkg.title}</h2>
-        <p className="mx-auto mt-3 max-w-md text-text-muted">
-          Share your preferred dates and our team will get back to you within 24 hours.
-        </p>
+        <p className="text-xs tracking-widest text-text-muted uppercase">{tVillaDetail('planYourStay')}</p>
+        <h2 className="font-body mt-2 text-3xl font-semibold">{tVillaDetail('requestTitle', { name: pkg.title })}</h2>
+        <p className="mx-auto mt-3 max-w-md text-text-muted">{tVillaDetail('shareInfo')}</p>
         <div className="mt-7">
           <VillaInquireButton villa={inquireVilla} />
         </div>

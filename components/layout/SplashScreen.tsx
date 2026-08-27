@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Logo } from '@/components/ui/Logo';
 import { useBodyScrollLock } from '@/lib/hooks/useBodyScrollLock';
 
@@ -81,6 +82,7 @@ function DiamondDivider() {
 }
 
 export function SplashScreen() {
+  const t = useTranslations('splash');
   const [show, setShow] = useState(true);
   const [visible, setVisible] = useState(true);
   // Controla solo el desvanecimiento de entrada del logo/texto — el fondo
@@ -130,8 +132,8 @@ export function SplashScreen() {
         <div className="mt-6">
           <DiamondDivider />
         </div>
-        <p className="mt-6 text-xs tracking-[0.5em] text-background uppercase">A Luxury Experience</p>
-        <p className="mt-3 text-[11px] tracking-[0.35em] text-accent uppercase">Isla Mujeres · Mexico</p>
+        <p className="mt-6 text-xs tracking-[0.5em] text-background uppercase">{t('tagline')}</p>
+        <p className="mt-3 text-[11px] tracking-[0.35em] text-accent uppercase">{t('location')}</p>
       </div>
     </div>
   );
