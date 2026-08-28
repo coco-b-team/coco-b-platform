@@ -1,11 +1,7 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Raleway } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { ChatWidget } from '@/components/chat/ChatWidget';
-import { SplashScreen } from '@/components/layout/SplashScreen';
 import './globals.css';
 
 const raleway = Raleway({
@@ -19,6 +15,14 @@ export const metadata: Metadata = {
   description: 'Villas exclusivas en Isla Mujeres, México',
 };
 
+// El sitio es solo-claro (no tiene tema oscuro implementado) — sin esto,
+// navegadores móviles con "oscurecer sitios web" activado (Edge y Chrome
+// en Android lo traen bastante expuesto) reinvierten colores y texto por
+// su cuenta, rompiendo el contraste en todo el sitio.
+export const viewport: Viewport = {
+  colorScheme: 'light',
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -29,13 +33,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={`${raleway.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <NextIntlClientProvider>
-          <SplashScreen />
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <ChatWidget />
-        </NextIntlClientProvider>
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
   );

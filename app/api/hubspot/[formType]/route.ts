@@ -6,7 +6,7 @@ import { validatePayload } from '@/lib/hubspot/validate';
 import { verifyTurnstile } from '@/lib/hubspot/turnstile';
 import { submitToHubSpot } from '@/lib/hubspot/submit';
 import { sendConfirmationEmail } from '@/lib/email/confirmation';
-import { addBookedRange } from '@/lib/wp/availability';
+import { addReservation } from '@/lib/wp/availability';
 
 type RouteContext = { params: Promise<{ formType: string }> };
 
@@ -73,7 +73,15 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     const villaKey = typeof fields?.villa_key === 'string' ? fields.villa_key : '';
     if (formType === 'villa-wedding' && villaKey) {
       try {
-        await addBookedRange(villaKey, String(data.check_in_date), String(data.check_out_date));
+        await addReservation({
+          villaKey,
+          villaTitle: String(data.villa_id ?? ''),
+          checkIn: String(data.check_in_date),
+          checkOut: String(data.check_out_date),
+          firstName: String(data.first_name ?? ''),
+          lastName: String(data.last_name ?? ''),
+          email: String(data.email ?? ''),
+        });
       } catch (availabilityError) {
         // El registro ya quedó guardado en HubSpot; no hacemos fallar la solicitud.
         console.error('[availability] no se pudo actualizar el calendario', availabilityError);

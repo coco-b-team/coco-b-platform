@@ -34,7 +34,9 @@ export function HeroCarousel({ images, alt }: { images: string[]; alt: string })
   // segundo render extra apenas monta; `typeof window` cubre el primer
   // render en el servidor, donde `matchMedia` no existe.
   const [autoAdvance, setAutoAdvance] = useState(
-    () => typeof window === 'undefined' || !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    () =>
+      typeof window === 'undefined' ||
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
 
   useEffect(() => {
@@ -61,6 +63,7 @@ export function HeroCarousel({ images, alt }: { images: string[]; alt: string })
           alt={i === active ? alt : ''}
           fill
           priority={i === 0}
+          quality={90}
           sizes="100vw"
           className={`object-cover transition-opacity duration-1000 ease-in-out ${
             i === active ? 'opacity-100' : 'opacity-0'

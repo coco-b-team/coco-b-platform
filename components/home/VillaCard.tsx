@@ -23,24 +23,29 @@ export async function VillaCard({
 
   return (
     <Card className="flex flex-col overflow-hidden">
-      <CardCarousel images={images} alt={villa.title} priority={priority} />
-      <div className="flex flex-1 flex-col gap-3 p-6">
-        <p className="text-text-muted text-xs tracking-widest uppercase">
+      <div className="relative">
+        <CardCarousel images={images} alt={villa.title} priority={priority} />
+        <span className="bg-background/90 text-primary pointer-events-none absolute top-4 left-4 z-10 rounded-full px-3 py-1 text-xs font-semibold tracking-widest uppercase shadow-sm backdrop-blur-sm">
           {villa.label || tCommon('singleVilla')}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col gap-4 p-6">
+        <p className="font-body text-xl font-semibold tracking-wide uppercase">{villa.title}</p>
+
+        <p className="text-text-muted line-clamp-3 text-sm leading-relaxed">
+          {villa.shortDescription}
         </p>
-        <p className="text-lg font-medium tracking-wider uppercase">{villa.title}</p>
-        <p className="text-text-muted line-clamp-3">{villa.shortDescription}</p>
 
         <VillaSpecs
           guestCapacity={villa.guestCapacity}
           bedrooms={villa.bedrooms}
           bathrooms={villa.bathrooms}
-          className="py-2"
+          variant="inline"
         />
 
-        <p className="font-semibold">{formatVillaPrice(villa)}</p>
+        <p className="text-primary text-xl font-semibold">{formatVillaPrice(villa)}</p>
 
-        <div className="mt-auto flex gap-3 pt-2">
+        <div className="mt-auto flex gap-3">
           <ReadMoreButton items={quickViewItems} index={quickViewIndex} />
           <VillaInquireButton
             villa={{

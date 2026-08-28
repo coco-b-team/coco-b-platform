@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { createPortal } from 'react-dom';
+import { usePathname } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { FaCommentDots, FaXmark, FaPaperPlane } from 'react-icons/fa6';
 import { ChatMessageBubble, type ChatRole } from './ChatMessageBubble';
 import { QuickReplies, type QuickReplyOption } from './QuickReplies';
@@ -17,10 +19,14 @@ type Message = { role: ChatRole; content: string; villa?: Villa };
 // comparaciones de la lógica se basan en estos ids, nunca en el texto
 // visible (que sí cambia con el idioma). `labelKey` apunta a
 // messages/*.json → chat.<namespace>.<key>.
-const INITIAL_QUICK_REPLIES: { id: 'viewVillas' | 'howToBook' | 'recommend'; labelKey: string }[] = [
+const INITIAL_QUICK_REPLIES: {
+  id: 'viewVillas' | 'howToBook' | 'recommend' | 'askSomethingElse';
+  labelKey: string;
+}[] = [
   { id: 'viewVillas', labelKey: 'quickReply.viewVillas' },
   { id: 'howToBook', labelKey: 'quickReply.howToBook' },
   { id: 'recommend', labelKey: 'quickReply.recommend' },
+  { id: 'askSomethingElse', labelKey: 'quickReply.askSomethingElse' },
 ];
 
 const GROUP_SIZE_OPTIONS: { id: string; labelKey: string; value: number }[] = [
@@ -48,16 +54,40 @@ const GREETING_DELAY_MS = 3600;
 // Solo mobile (no tablet): el chat se abre como una ficha que sube desde
 // abajo, no como una tapa de pantalla completa. En tablet y desktop
 // queda igual, como la tarjeta flotante de siempre.
-function useIsCompact() {
-  const [isCompact, setIsCompact] = useState(false);
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 639px)');
-    const update = () => setIsCompact(mq.matches);
+    const mq = window.matchMedia(query);
+    const update = () => setMatches(mq.matches);
     update();
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
-  }, []);
-  return isCompact;
+  }, [query]);
+  return matches;
+}
+
+// Mientras la tarjeta anclada al hero (`#hero-chat-slot`, ver Hero.tsx)
+// sigue a la vista, la burbuja chica de abajo se mantiene oculta — apenas
+// esa tarjeta se sale de la pantalla al scrollear, la burbuja aparece en
+// su lugar. Importante: se observa la tarjeta en sí, NO el hero completo
+// — el hero es mucho más alto que la tarjeta (que vive pegada a su borde
+// inferior), así que un umbral basado en cuánto del hero sigue visible
+// dispararía el cambio mucho antes de que la tarjeta realmente desaparezca,
+// dejando a las dos on screen a la vez.
+function useHeroDocked(enabled: boolean) {
+  // `intersecting` puede quedar en un valor viejo apenas `enabled` pasa a
+  // false (ej. se navega a otra página) — no importa, el `enabled &&` de
+  // abajo lo tapa sin necesidad de resetearlo a mano dentro del efecto.
+  const [intersecting, setIntersecting] = useState(false);
+  useEffect(() => {
+    if (!enabled) return;
+    const slotEl = document.getElementById('hero-chat-slot');
+    if (!slotEl) return;
+    const observer = new IntersectionObserver(([entry]) => setIntersecting(entry.isIntersecting));
+    observer.observe(slotEl);
+    return () => observer.disconnect();
+  }, [enabled]);
+  return enabled && intersecting;
 }
 
 type QuickReplyKind = 'initial' | 'groupSize' | 'interest' | null;
@@ -68,11 +98,41 @@ export function ChatWidget() {
   const [panelVisible, setPanelVisible] = useState(false);
   const [entered, setEntered] = useState(false);
   const [showGreeting, setShowGreeting] = useState(false);
-  const isCompact = useIsCompact();
-  // Se calcula solo en el primer render (mensaje de bienvenida) — si el
-  // idioma cambia después, este mensaje ya enviado no se retraduce solo,
-  // igual que el resto del historial de la conversación.
-  const [messages, setMessages] = useState<Message[]>(() => [{ role: 'model', content: t('welcome') }]);
+  const isCompact = useMediaQuery('(max-width: 639px)');
+  // Desktop real (lg+) — el chat "anclado al hero" solo tiene sentido ahí;
+  // en tablet/mobile el hero es demasiado angosto para alojarlo.
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const isHomePage = usePathname() === '/';
+  const heroDocked = useHeroDocked(isHomePage && isDesktop);
+  // Nodo real del slot dentro del Hero (ver Hero.tsx) — se busca en un
+  // efecto porque el DOM recién existe del lado del cliente. `createPortal`
+  // hace que la tarjeta vinculada al hero sea un hijo de verdad de ese
+  // slot, no un overlay fixed aparte, así se desplaza con el resto del
+  // contenido al scrollear en vez de flotar sobre el viewport.
+  const [heroSlot, setHeroSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    // Reacciona a `isHomePage`/`isDesktop` (ej. se navega a "/" desde otra
+    // página sin recargar, y ChatWidget nunca se desmonta porque vive en
+    // el layout) — no es el típico "estado derivado" que el lint prefiere
+    // calcular en el render: `document.getElementById` es una lectura al
+    // DOM real, no algo derivable de props/estado.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHeroSlot(isHomePage && isDesktop ? document.getElementById('hero-chat-slot') : null);
+  }, [isHomePage, isDesktop]);
+  // El saludo inicial se recalcula si cambia el idioma, pero solo mientras
+  // siga siendo lo único en pantalla (nadie tocó el chat todavía) — apenas
+  // hay una conversación real (una pregunta del usuario, una respuesta de
+  // Gemini), esa historia ya no se retraduce sola, iría en contra de lo que
+  // efectivamente se dijo.
+  const locale = useLocale();
+  const [messages, setMessages] = useState<Message[]>(() => [
+    { role: 'model', content: t('welcome') },
+  ]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMessages((prev) => (prev.length === 1 ? [{ role: 'model', content: t('welcome') }] : prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +150,7 @@ export function ChatWidget() {
   const [recommenderStep, setRecommenderStep] = useState<RecommenderStep>('idle');
   const [pendingGroupSize, setPendingGroupSize] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const quickReplyOptions: QuickReplyOption[] | null =
     quickReplyKind === 'initial'
@@ -162,6 +223,7 @@ export function ChatWidget() {
         // de tarjeta que ya tiene el recomendador.
         if (data.villa) next.push({ role: 'model', content: '', villa: data.villa });
         setMessages(next);
+        setQuickReplyKind('initial');
         return;
       }
       if (!res.ok) throw new Error(data.error || t('errorGeneric'));
@@ -183,6 +245,27 @@ export function ChatWidget() {
     sendToAssistant(nextMessages);
   }
 
+  async function showVillasList() {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/villas/summary', { signal: AbortSignal.timeout(25000) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t('errorGeneric'));
+      const villas: Villa[] = data.villas ?? [];
+      setMessages((prev) => [
+        ...prev,
+        { role: 'model', content: villas.length ? t('viewVillasIntro') : t('viewVillasEmpty') },
+        ...villas.map((villa) => ({ role: 'model' as const, content: '', villa })),
+      ]);
+    } catch {
+      setError(t('errorGeneric'));
+    } finally {
+      setIsLoading(false);
+      setQuickReplyKind('initial');
+    }
+  }
+
   async function fetchRecommendation(groupSize: number, interest: string) {
     setIsLoading(true);
     setError(null);
@@ -191,7 +274,7 @@ export function ChatWidget() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ groupSize, interest }),
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(25000),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || t('errorRecommend'));
@@ -205,6 +288,7 @@ export function ChatWidget() {
     } finally {
       setIsLoading(false);
       setRecommenderStep('idle');
+      setQuickReplyKind('initial');
     }
   }
 
@@ -220,6 +304,38 @@ export function ChatWidget() {
       setMessages(nextMessages);
       setRecommenderStep('askingGroupSize');
       setQuickReplyKind('groupSize');
+      return;
+    }
+
+    if (recommenderStep === 'idle' && id === 'viewVillas') {
+      setMessages((prev) => [...prev, { role: 'user', content: t('quickReply.viewVillas') }]);
+      showVillasList();
+      return;
+    }
+
+    if (recommenderStep === 'idle' && id === 'howToBook') {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'user', content: t('quickReply.howToBook') },
+        { role: 'model', content: t('howToBookBody') },
+      ]);
+      setQuickReplyKind('initial');
+      return;
+    }
+
+    // Escape hatch al chat libre con Gemini: no manda nada todavía, solo
+    // invita a escribir y deja el input listo — el próximo mensaje que
+    // tipee el usuario es el que viaja directo a la IA.
+    if (recommenderStep === 'idle' && id === 'askSomethingElse') {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'user', content: t('quickReply.askSomethingElse') },
+        { role: 'model', content: t('askSomethingElsePrompt') },
+      ]);
+      // Los chips siguen disponibles por si prefiere tocar uno en vez de
+      // escribir — esto solo invita a escribir, no los reemplaza.
+      setQuickReplyKind('initial');
+      requestAnimationFrame(() => inputRef.current?.focus());
       return;
     }
 
@@ -245,10 +361,6 @@ export function ChatWidget() {
       fetchRecommendation(pendingGroupSize, option.value);
       return;
     }
-
-    // Sugerencias iniciales que van directo al chat libre (Gemini)
-    const initialOption = INITIAL_QUICK_REPLIES.find((o) => o.id === id);
-    sendFreeTextMessage(initialOption ? t(initialOption.labelKey) : id);
   }
 
   function retryLastMessage() {
@@ -267,33 +379,87 @@ export function ChatWidget() {
   return (
     <>
       {!isOpen && (
-        <div
-          className={`fixed right-6 bottom-6 z-50 flex flex-col items-end gap-3 transition-all duration-500 ease-out ${
-            entered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-          }`}
-        >
-          {showGreeting && (
-            <div className="relative max-w-55 rounded-2xl rounded-br-sm bg-background px-4 py-3 text-sm text-text shadow-xl ring-1 ring-border">
+        <>
+          {/* Anclado al hero de verdad (portado a #hero-chat-slot, ver
+              Hero.tsx) — vive en el flujo normal del documento, así que se
+              desplaza con el resto del contenido al scrollear en vez de
+              flotar sobre el viewport. Eso mismo hace que "se despegue":
+              apenas se sale de la vista, deja de tapar nada, y la burbuja
+              de abajo aparece en su lugar (ver el bloque siguiente). */}
+          {heroSlot &&
+            createPortal(
               <button
-                onClick={() => setShowGreeting(false)}
-                aria-label={t('closeSuggestionAriaLabel')}
-                className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-text text-background"
+                onClick={openChat}
+                aria-label={t('openChatAriaLabel')}
+                aria-hidden={!entered}
+                tabIndex={entered ? 0 : -1}
+                className={`w-72 rounded-3xl border border-white/15 bg-white/10 p-6 text-left shadow-[0_20px_60px_-15px_rgba(0,0,0,0.55)] backdrop-blur-xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-white/25 hover:bg-white/15 sm:w-80 ${
+                  entered
+                    ? 'translate-y-0 scale-100 opacity-100 blur-none'
+                    : 'translate-y-4 scale-95 opacity-0 blur-sm'
+                }`}
               >
-                <FaXmark size={10} />
-              </button>
-              {t('greeting')}
-            </div>
-          )}
+                <div className="flex items-center gap-2.5">
+                  <span className="bg-primary text-background flex h-7 w-7 shrink-0 items-center justify-center rounded-full shadow-[0_0_0_4px_rgba(255,255,255,0.08)]">
+                    <FaCommentDots size={12} />
+                  </span>
+                  <p className="text-background/70 text-xs tracking-widest uppercase">
+                    {t('conciergeLabel')}
+                  </p>
+                </div>
+                <p className="font-body text-background mt-4 text-xl leading-snug font-light">
+                  {t('heroDockQuestion')}
+                </p>
+                <div className="bg-primary text-background hover:bg-primary-light shadow-primary/30 mt-5 flex items-center justify-between rounded-full px-4 py-2.5 text-sm font-medium shadow-lg transition-colors">
+                  <span>{t('heroDockCta')}</span>
+                  <FaPaperPlane size={12} />
+                </div>
+              </button>,
+              heroSlot,
+            )}
 
-          <button
-            onClick={openChat}
-            aria-label={t('openChatAriaLabel')}
-            className="flex h-14 w-14 items-center justify-center gap-2 rounded-full bg-primary text-background shadow-lg shadow-primary/30 ring-1 ring-white/10 transition-all hover:scale-105 hover:bg-primary-light active:scale-95 sm:w-auto sm:justify-start sm:px-5"
+          <div
+            aria-hidden={!(entered && !heroDocked)}
+            className={`fixed right-6 bottom-6 z-50 flex flex-col items-end gap-3 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              entered && !heroDocked
+                ? 'translate-y-0 scale-100 opacity-100 blur-none'
+                : 'pointer-events-none translate-y-3 scale-90 opacity-0 blur-sm'
+            }`}
           >
-            <FaCommentDots size={22} className="shrink-0" />
-            <span className="hidden text-sm font-medium tracking-wide sm:inline">{t('conciergeLabel')}</span>
-          </button>
-        </div>
+            {showGreeting && (
+              <div className="bg-background text-text ring-border/60 relative max-w-60 rounded-2xl rounded-br-sm px-4 py-3 text-sm shadow-xl ring-1">
+                <button
+                  onClick={() => setShowGreeting(false)}
+                  aria-label={t('closeSuggestionAriaLabel')}
+                  tabIndex={entered && !heroDocked ? 0 : -1}
+                  className="bg-text text-background absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full"
+                >
+                  <FaXmark size={10} />
+                </button>
+                <span className="bg-primary mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" />
+                {t('greeting')}
+              </div>
+            )}
+
+            <div className="relative">
+              <span
+                aria-hidden="true"
+                className="bg-primary/50 absolute inset-0 -z-10 animate-pulse rounded-full blur-lg motion-reduce:animate-none"
+              />
+              <button
+                onClick={openChat}
+                aria-label={t('openChatAriaLabel')}
+                tabIndex={entered && !heroDocked ? 0 : -1}
+                className="from-primary to-primary-light text-background shadow-primary/40 flex h-14 w-14 items-center justify-center gap-2 rounded-full bg-linear-to-br shadow-lg ring-1 ring-white/15 transition-all hover:scale-105 hover:shadow-xl active:scale-95 sm:w-auto sm:justify-start sm:px-5"
+              >
+                <FaCommentDots size={22} className="shrink-0" />
+                <span className="hidden text-sm font-medium tracking-wide sm:inline">
+                  {t('conciergeLabel')}
+                </span>
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {isOpen && (
@@ -314,16 +480,20 @@ export function ChatWidget() {
             aria-modal={isCompact ? true : undefined}
             aria-label={isCompact ? t('panelAriaLabel') : undefined}
             tabIndex={-1}
-            className={`fixed inset-x-0 bottom-0 z-50 flex h-[85vh] max-h-160 flex-col rounded-t-2xl bg-background shadow-xl transition-all duration-300 ease-out sm:inset-x-auto sm:right-6 sm:bottom-6 sm:h-150 sm:max-h-[80vh] sm:w-95 sm:translate-y-0 sm:rounded-xl sm:border sm:border-border ${
+            className={`bg-background sm:border-border fixed inset-x-0 bottom-0 z-50 flex h-[85vh] max-h-160 flex-col rounded-t-2xl shadow-xl transition-all duration-300 ease-out sm:inset-x-auto sm:right-6 sm:bottom-6 sm:h-150 sm:max-h-[80vh] sm:w-95 sm:translate-y-0 sm:rounded-xl sm:border ${
               panelVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
             }`}
           >
-            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+            <div className="border-border flex shrink-0 items-center justify-between border-b px-4 py-3">
               <div className="flex items-center gap-2">
                 <Logo alt="" width={20} height={20} className="h-5 w-auto" />
                 <p className="font-semibold">{t('headerTitle')}</p>
               </div>
-              <button onClick={closeChat} aria-label={t('closeChatAriaLabel')} className="text-text-muted hover:text-text">
+              <button
+                onClick={closeChat}
+                aria-label={t('closeChatAriaLabel')}
+                className="text-text-muted hover:text-text"
+              >
                 <FaXmark size={18} />
               </button>
             </div>
@@ -346,17 +516,17 @@ export function ChatWidget() {
               )}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="rounded-2xl bg-background-alt px-4 py-2.5 text-sm text-text-muted">
+                  <div className="bg-background-alt text-text-muted rounded-2xl px-4 py-2.5 text-sm">
                     {t('typing')}
                   </div>
                 </div>
               )}
               {error && (
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm text-error">{error}</p>
+                  <p className="text-error text-sm">{error}</p>
                   <button
                     onClick={retryLastMessage}
-                    className="shrink-0 text-sm font-medium text-primary hover:text-primary-light hover:underline"
+                    className="text-primary hover:text-primary-light shrink-0 text-sm font-medium hover:underline"
                   >
                     {t('retry')}
                   </button>
@@ -364,17 +534,20 @@ export function ChatWidget() {
               )}
             </div>
 
-            {quickReplyOptions && !isLoading && <QuickReplies options={quickReplyOptions} onSelect={handleQuickReply} />}
+            {quickReplyOptions && !isLoading && (
+              <QuickReplies options={quickReplyOptions} onSelect={handleQuickReply} />
+            )}
 
-            <div className="flex shrink-0 items-center gap-2 border-t border-border p-3">
+            <div className="border-border flex shrink-0 items-center gap-2 border-t p-3">
               <input
+                ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={t('inputPlaceholder')}
                 aria-label={t('inputAriaLabel')}
                 disabled={isLoading}
-                className="flex-1 rounded-lg border border-border px-3 py-2 text-sm text-text placeholder:text-text-muted focus:border-primary focus:outline-none disabled:opacity-60"
+                className="border-border text-text placeholder:text-text-muted focus:border-primary flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
               />
               <button
                 onClick={() => {
@@ -384,7 +557,7 @@ export function ChatWidget() {
                 }}
                 disabled={isLoading || !input.trim()}
                 aria-label={t('sendAriaLabel')}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-background transition-colors hover:bg-primary-light disabled:opacity-40"
+                className="bg-primary text-background hover:bg-primary-light flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-40"
               >
                 <FaPaperPlane size={14} />
               </button>

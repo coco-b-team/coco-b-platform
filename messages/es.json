@@ -22,6 +22,7 @@
     "villas": "Villas",
     "mixMatch": "Mix & Match",
     "about": "Nosotros",
+    "staff": "Staff",
     "homeAriaLabel": "Coco B Isla — inicio",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
@@ -40,7 +41,8 @@
     "quickReply": {
       "viewVillas": "Ver villas",
       "howToBook": "¿Cómo reservo?",
-      "recommend": "Recomiéndame una villa"
+      "recommend": "Recomiéndame una villa",
+      "askSomethingElse": "¿Otra duda?"
     },
     "groupSize": {
       "g1": "1–4 personas",
@@ -57,6 +59,12 @@
     "askGroupSize": "¡Con gusto! ¿Para cuántas personas es tu estadía?",
     "askInterest": "¿Qué buscan principalmente en su estadía?",
     "recommendationIntro": "Según lo que me cuentas, esta es mi recomendación:",
+    "viewVillasIntro": "Estas son nuestras villas — toca una para ver todos los detalles.",
+    "viewVillasEmpty": "Por ahora no tenemos villas publicadas. Vuelve a intentarlo pronto.",
+    "howToBookBody": "Es sencillo:\n\n**1.** Explora nuestras villas y elige la que se ajuste a tu estadía.\n**2.** Revisa su calendario — las fechas en turquesa están por confirmar y las grises ya están reservadas.\n**3.** Completa el formulario de solicitud con tus fechas, huéspedes y datos de contacto.\n**4.** Nuestro equipo confirma la disponibilidad y te contacta dentro de 24 horas.\n\n¿Quieres ver las villas ahora?",
+    "askSomethingElsePrompt": "Claro, escribe tu pregunta abajo y con gusto te ayudo.",
+    "heroDockQuestion": "¿Buscas la villa perfecta para tu estadía?",
+    "heroDockCta": "Pregúntame lo que quieras",
     "errorGeneric": "No pudimos responder en este momento. Intenta de nuevo en un rato.",
     "errorRecommend": "No pudimos generar una recomendación en este momento. Intenta de nuevo en un rato.",
     "typing": "Escribiendo…",
@@ -113,7 +121,9 @@
     "flexibleDates": "¿Fechas flexibles?",
     "numberOfGuests": "Cantidad de huéspedes",
     "decreaseGuests": "Menos huéspedes",
-    "increaseGuests": "Más huéspedes"
+    "increaseGuests": "Más huéspedes",
+    "legendPending": "Por confirmar",
+    "legendUnavailable": "No disponible"
   },
   "inquiryModal": {
     "villaEyebrow": "Villa",
@@ -133,7 +143,9 @@
     "firstName": "Nombre",
     "lastName": "Apellido",
     "email": "Correo electrónico",
+    "invalidEmail": "Ingresa un correo electrónico válido.",
     "phoneNumber": "Número de teléfono",
+    "invalidPhone": "No parece un número válido para el país seleccionado.",
     "countryCodeAriaLabel": "Código de país",
     "searchCountryPlaceholder": "Buscar país…",
     "noMatches": "Sin resultados.",

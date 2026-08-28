@@ -26,7 +26,7 @@ export function useFocusTrap(active: boolean) {
 
     const raf = requestAnimationFrame(() => {
       const focusables = getFocusable();
-      (focusables[0] ?? container).focus();
+      (focusables[0] ?? container).focus({ preventScroll: true });
     });
 
     function onKeyDown(e: KeyboardEvent) {
@@ -48,7 +48,9 @@ export function useFocusTrap(active: boolean) {
     return () => {
       cancelAnimationFrame(raf);
       document.removeEventListener('keydown', onKeyDown);
-      previouslyFocused?.focus?.();
+      // preventScroll: sin esto, devolver el foco puede volver a scrollear
+      // la página — pisando la posición que useBodyScrollLock ya restauró.
+      previouslyFocused?.focus?.({ preventScroll: true });
     };
   }, [active]);
 

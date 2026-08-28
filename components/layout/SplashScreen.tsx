@@ -8,11 +8,19 @@ import { useBodyScrollLock } from '@/lib/hooks/useBodyScrollLock';
 // Se muestra desde el primer render (sin esperar a un efecto), tanto en
 // el HTML que arma el servidor como en el primer pintado del cliente —
 // así no hay ningún instante en que se vea la web real por debajo antes
-// de que aparezca. Como este componente vive en el layout raíz, React no
-// lo vuelve a montar en navegaciones internas (Link/router) — solo en una
-// carga real de página (F5 o abrir el sitio), que es cuando debe aparecer.
+// de que aparezca. Como este componente vive en el layout del sitio
+// público (no en el raíz), React no lo vuelve a montar en navegaciones
+// internas (Link/router) dentro del sitio — solo en una carga real de
+// página (F5 o abrir el sitio), que es cuando debe aparecer.
 const HOLD_MS = 1400;
 const EXIT_MS = 600;
+
+// /admin vive fuera de este layout, así que nunca monta el splash — al
+// volver de ahí al sitio (ej. "Ver sitio" del panel), React lo monta por
+// primera vez en esa sesión y de otro modo reproduciría la intro entera
+// como si fuera una carga real. El panel deja esta bandera en
+// sessionStorage antes de navegar; acá se lee una sola vez y se borra.
+const SKIP_SPLASH_KEY = 'coco-b-skip-splash';
 
 // Pequeño diamante — la misma forma geométrica que ya usa el isotipo del
 // logo (los rombos sobre la firma), para que el fondo se sienta parte de
@@ -37,7 +45,17 @@ function Diamond({ x, y, size, opacity }: { x: number; y: number; size: number; 
 // borde, no un elemento que compita por atención. Nada de brillo ni
 // centro "diana": la idea es que se note al mirar con calma, no que
 // salte a la vista apenas carga.
-function CornerMotif({ x, y, flipX = false, flipY = false }: { x: number; y: number; flipX?: boolean; flipY?: boolean }) {
+function CornerMotif({
+  x,
+  y,
+  flipX = false,
+  flipY = false,
+}: {
+  x: number;
+  y: number;
+  flipX?: boolean;
+  flipY?: boolean;
+}) {
   const dx = flipX ? -1 : 1;
   const dy = flipY ? -1 : 1;
   return (
@@ -56,7 +74,7 @@ function SplashOrnament() {
   return (
     <svg
       viewBox="0 0 800 800"
-      className="pointer-events-none absolute inset-0 h-full w-full text-accent"
+      className="text-accent pointer-events-none absolute inset-0 h-full w-full"
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
     >
@@ -75,7 +93,17 @@ function DiamondDivider() {
   return (
     <svg width="120" height="12" viewBox="0 0 120 12" className="text-accent" aria-hidden="true">
       <line x1="0" y1="6" x2="48" y2="6" stroke="currentColor" strokeWidth="1" opacity={0.5} />
-      <rect x="55" y="1" width="10" height="10" transform="rotate(45 60 6)" stroke="currentColor" strokeWidth="1" fill="none" opacity={0.7} />
+      <rect
+        x="55"
+        y="1"
+        width="10"
+        height="10"
+        transform="rotate(45 60 6)"
+        stroke="currentColor"
+        strokeWidth="1"
+        fill="none"
+        opacity={0.7}
+      />
       <line x1="72" y1="6" x2="120" y2="6" stroke="currentColor" strokeWidth="1" opacity={0.5} />
     </svg>
   );
@@ -83,8 +111,14 @@ function DiamondDivider() {
 
 export function SplashScreen() {
   const t = useTranslations('splash');
-  const [show, setShow] = useState(true);
-  const [visible, setVisible] = useState(true);
+  const [skipIntro] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const skip = Boolean(sessionStorage.getItem(SKIP_SPLASH_KEY));
+    if (skip) sessionStorage.removeItem(SKIP_SPLASH_KEY);
+    return skip;
+  });
+  const [show, setShow] = useState(() => !skipIntro);
+  const [visible, setVisible] = useState(() => !skipIntro);
   // Controla solo el desvanecimiento de entrada del logo/texto — el fondo
   // ya está opaco desde el primer render (ver comentario de arriba), así
   // que animar el contenido por separado no reintroduce el parpadeo.
@@ -96,12 +130,14 @@ export function SplashScreen() {
   useBodyScrollLock(visible);
 
   useEffect(() => {
+    if (skipIntro) return;
     const raf = requestAnimationFrame(() => setContentVisible(true));
     const holdTimer = setTimeout(exit, HOLD_MS);
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(holdTimer);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function exit() {
@@ -117,7 +153,7 @@ export function SplashScreen() {
     <div
       onClick={exit}
       role="presentation"
-      className={`fixed inset-0 z-100 flex cursor-pointer flex-col items-center justify-center overflow-hidden bg-text transition-opacity duration-500 ease-out ${
+      className={`bg-text fixed inset-0 z-100 flex cursor-pointer flex-col items-center justify-center overflow-hidden transition-opacity duration-500 ease-out ${
         visible ? 'opacity-100' : 'opacity-0'
       }`}
     >
@@ -132,8 +168,8 @@ export function SplashScreen() {
         <div className="mt-6">
           <DiamondDivider />
         </div>
-        <p className="mt-6 text-xs tracking-[0.5em] text-background uppercase">{t('tagline')}</p>
-        <p className="mt-3 text-[11px] tracking-[0.35em] text-accent uppercase">{t('location')}</p>
+        <p className="text-background mt-6 text-xs tracking-[0.5em] uppercase">{t('tagline')}</p>
+        <p className="text-accent mt-3 text-[11px] tracking-[0.35em] uppercase">{t('location')}</p>
       </div>
     </div>
   );

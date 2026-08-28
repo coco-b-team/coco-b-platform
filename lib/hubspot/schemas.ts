@@ -21,7 +21,7 @@ export const formSchemas: Record<HubSpotFormType, Record<string, FieldRule>> = {
     phone: { required: true, maxLength: 40 },
     referral_source: { maxLength: 100 },
     message: { maxLength: 2000 },
-    sms_consent: { required: true, type: 'boolean' },
+    sms_consent: { type: 'boolean' },
   },
   'popup-waitlist': {
     first_name: { required: true, maxLength: 100 },

@@ -83,7 +83,10 @@ export function CountryCodeSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('searchCountryPlaceholder')}
-              className="text-text placeholder:text-text-muted w-full text-sm focus:outline-none"
+              // text-base (no text-sm) a propósito — un <input> con
+              // font-size menor a 16px hace que Safari/WebKit (incluido
+              // Edge en iOS) haga zoom automático al enfocarlo en mobile.
+              className="text-text placeholder:text-text-muted w-full text-base focus:outline-none"
             />
           </div>
           <div className="max-h-64 overflow-y-auto py-1">

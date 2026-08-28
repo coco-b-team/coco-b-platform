@@ -39,34 +39,45 @@ function addMonths(date: Date, months: number) {
 }
 
 // No hay un PMS real conectado (Sirvoy quedó fuera del alcance de este
-// hackathon) — estas son noches con una *solicitud* encima, no reservas
-// confirmadas por el equipo. Ver lib/wp/availability.ts para el detalle de
-// esa limitación. Si no hay `villaKey` (ej. otros usos futuros de este
-// componente sin una villa puntual todavía), no se bloquea nada.
-function useBookedDates(villaKey: string | undefined) {
-  const [bookedDates, setBookedDates] = useState<Set<string>>(new Set());
+// hackathon) — "pendiente" son noches con una *solicitud* encima, todavía
+// sin revisar por el equipo; "confirmada" es una solicitud que alguien
+// aceptó a mano desde /admin. Ver lib/wp/availability.ts para el detalle.
+// Si no hay `villaKey` (ej. otros usos futuros de este componente sin una
+// villa puntual todavía), no se bloquea nada.
+type Availability = { pending: Set<string>; confirmed: Set<string> };
+
+function useAvailability(villaKey: string | undefined) {
+  const [availability, setAvailability] = useState<Availability>({
+    pending: new Set(),
+    confirmed: new Set(),
+  });
 
   useEffect(() => {
-    // Sin villaKey no hay nada que traer — el estado ya arranca en un Set
-    // vacío, no hace falta volver a setearlo.
+    // Sin villaKey no hay nada que traer — el estado ya arranca vacío, no
+    // hace falta volver a setearlo.
     if (!villaKey) return;
     let cancelled = false;
     fetch(`/api/availability/${encodeURIComponent(villaKey)}`)
-      .then((res) => (res.ok ? res.json() : { bookedDates: [] }))
-      .then((data: { bookedDates?: string[] }) => {
-        if (!cancelled) setBookedDates(new Set(data.bookedDates ?? []));
+      .then((res) => (res.ok ? res.json() : { pendingDates: [], confirmedDates: [] }))
+      .then((data: { pendingDates?: string[]; confirmedDates?: string[] }) => {
+        if (!cancelled) {
+          setAvailability({
+            pending: new Set(data.pendingDates ?? []),
+            confirmed: new Set(data.confirmedDates ?? []),
+          });
+        }
       })
       .catch(() => {
         // Falla silenciosa — mejor mostrar el calendario sin fechas
         // bloqueadas que romper el paso 1 de la reserva por esto.
-        if (!cancelled) setBookedDates(new Set());
+        if (!cancelled) setAvailability({ pending: new Set(), confirmed: new Set() });
       });
     return () => {
       cancelled = true;
     };
   }, [villaKey]);
 
-  return bookedDates;
+  return availability;
 }
 
 type Range = { start: Date | null; end: Date | null };
@@ -74,7 +85,8 @@ type Range = { start: Date | null; end: Date | null };
 function MonthGrid({
   monthDate,
   today,
-  bookedDates,
+  pending,
+  confirmed,
   range,
   onSelect,
   monthNames,
@@ -82,7 +94,8 @@ function MonthGrid({
 }: {
   monthDate: Date;
   today: Date;
-  bookedDates: Set<string>;
+  pending: Set<string>;
+  confirmed: Set<string>;
   range: Range;
   onSelect: (date: Date) => void;
   monthNames: string[];
@@ -115,7 +128,10 @@ function MonthGrid({
           if (!date) return <div key={i} />;
 
           const iso = toISO(date);
-          const isDisabled = date < today || bookedDates.has(iso);
+          const isPast = date < today;
+          const isPending = pending.has(iso);
+          const isConfirmed = confirmed.has(iso);
+          const isDisabled = isPast || isPending || isConfirmed;
           const isStart = range.start ? iso === toISO(range.start) : false;
           const isEnd = range.end ? iso === toISO(range.end) : false;
           const inSpan = range.start && range.end && date >= range.start && date <= range.end;
@@ -135,12 +151,19 @@ function MonthGrid({
                 type="button"
                 disabled={isDisabled}
                 onClick={() => onSelect(date)}
+                // Pendiente (turquesa clarito) y confirmada (gris) se pintan
+                // distinto para que se note el estado real de la solicitud,
+                // aunque las dos queden igual de no-seleccionables.
                 className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full text-sm transition-colors ${
                   isStart || isEnd
                     ? 'bg-primary text-background font-semibold'
-                    : isDisabled
-                      ? 'text-text-muted/40 cursor-not-allowed'
-                      : 'text-text hover:bg-background-alt'
+                    : isConfirmed
+                      ? 'bg-border/60 text-text-muted cursor-not-allowed'
+                      : isPending
+                        ? 'bg-accent/40 text-text cursor-not-allowed'
+                        : isPast
+                          ? 'text-text-muted/40 cursor-not-allowed'
+                          : 'text-text hover:bg-background-alt'
                 }`}
               >
                 {date.getDate()}
@@ -201,7 +224,7 @@ export function DateRangePicker({
   onGuestsChange,
 }: {
   // Identifica de qué villa/paquete traer las fechas ya solicitadas (ver
-  // useBookedDates). Sin esto, el calendario no bloquea ninguna fecha.
+  // useAvailability). Sin esto, el calendario no bloquea ninguna fecha.
   villaKey?: string;
   guestMax?: number;
   initialGuests?: number;
@@ -216,7 +239,7 @@ export function DateRangePicker({
   const locale = useLocale();
   const { monthNames, weekdays } = useCalendarLabels(locale);
   const today = useMemo(() => startOfDay(new Date()), []);
-  const bookedDates = useBookedDates(villaKey);
+  const { pending, confirmed } = useAvailability(villaKey);
   const [viewMonth, setViewMonth] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
   );
@@ -297,7 +320,8 @@ export function DateRangePicker({
           <MonthGrid
             monthDate={viewMonth}
             today={today}
-            bookedDates={bookedDates}
+            pending={pending}
+            confirmed={confirmed}
             range={range}
             onSelect={handleSelect}
             monthNames={monthNames}
@@ -307,7 +331,8 @@ export function DateRangePicker({
             <MonthGrid
               monthDate={secondMonth}
               today={today}
-              bookedDates={bookedDates}
+              pending={pending}
+              confirmed={confirmed}
               range={range}
               onSelect={handleSelect}
               monthNames={monthNames}
@@ -315,6 +340,19 @@ export function DateRangePicker({
             />
           </div>
         </div>
+
+        {villaKey && (
+          <div className="mt-5 flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-1.5">
+              <span className="bg-accent/40 h-3 w-3 rounded-full" />
+              <span className="text-text-muted">{t('legendPending')}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="bg-border/60 h-3 w-3 rounded-full" />
+              <span className="text-text-muted">{t('legendUnavailable')}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <input type="hidden" name="check_in_date" value={range.start ? toISO(range.start) : ''} />

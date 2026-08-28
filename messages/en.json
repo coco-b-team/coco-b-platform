@@ -22,6 +22,7 @@
     "villas": "Villas",
     "mixMatch": "Mix & Match",
     "about": "About Us",
+    "staff": "Staff",
     "homeAriaLabel": "Coco B Isla — home",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -40,7 +41,8 @@
     "quickReply": {
       "viewVillas": "View villas",
       "howToBook": "How do I book?",
-      "recommend": "Recommend a villa for me"
+      "recommend": "Recommend a villa for me",
+      "askSomethingElse": "Something else?"
     },
     "groupSize": {
       "g1": "1–4 guests",
@@ -57,6 +59,12 @@
     "askGroupSize": "Happy to help! How many guests will be staying?",
     "askInterest": "What are you mainly looking for in your stay?",
     "recommendationIntro": "Based on what you've told me, here's my recommendation:",
+    "viewVillasIntro": "Here are our villas — tap one to see the full details.",
+    "viewVillasEmpty": "We don't have any villas published right now. Please check back soon.",
+    "howToBookBody": "It's simple:\n\n**1.** Browse our villas and pick the one that fits your stay.\n**2.** Check its calendar — turquoise dates are pending confirmation, gray dates are already booked.\n**3.** Fill out the request form with your dates, guests, and contact info.\n**4.** Our team confirms availability and reaches out within 24 hours.\n\nWant to see the villas now?",
+    "askSomethingElsePrompt": "Of course — go ahead and type your question below, I'm listening.",
+    "heroDockQuestion": "Looking for the perfect villa for your stay?",
+    "heroDockCta": "Ask me anything",
     "errorGeneric": "We couldn't respond right now. Please try again in a bit.",
     "errorRecommend": "We couldn't generate a recommendation right now. Please try again in a bit.",
     "typing": "Typing…",
@@ -113,7 +121,9 @@
     "flexibleDates": "Flexible dates?",
     "numberOfGuests": "Number of guests",
     "decreaseGuests": "Fewer guests",
-    "increaseGuests": "More guests"
+    "increaseGuests": "More guests",
+    "legendPending": "Pending confirmation",
+    "legendUnavailable": "Not available"
   },
   "inquiryModal": {
     "villaEyebrow": "Villa",
@@ -133,7 +143,9 @@
     "firstName": "First name",
     "lastName": "Last name",
     "email": "E-mail",
+    "invalidEmail": "Enter a valid e-mail address.",
     "phoneNumber": "Phone number",
+    "invalidPhone": "That doesn't look like a valid number for the selected country.",
     "countryCodeAriaLabel": "Country code",
     "searchCountryPlaceholder": "Search country…",
     "noMatches": "No matches.",
