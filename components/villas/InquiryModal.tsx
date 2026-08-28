@@ -55,7 +55,12 @@ type Step = 'intro' | 'dates' | 'details' | 'success';
 // Mismo patrón que lib/hubspot/validate.ts del lado del servidor — se
 // repite acá (en vez de importarlo) porque ese módulo no está pensado
 // para el cliente, y es una regex chica y estable.
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//
+// Solo caracteres que realmente aparecen en emails reales (letras, dígitos,
+// punto, guion bajo, más, guion) — la versión anterior (`[^\s@]+`) era tan
+// permisiva que aceptaba casi cualquier caracter antes de la arroba,
+// incluyendo símbolos como #$%& que ningún proveedor real usa.
+const EMAIL_REGEX = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/;
 
 // Cuánto se muestra la transición de carga antes de pasar al paso 1 — lo
 // suficiente para sentirse intencional, sin llegar a frenar a alguien que
@@ -207,10 +212,21 @@ export function InquiryModal({ villa, onClose }: { villa: ModalVilla; onClose: (
     setEmailError(value && !EMAIL_REGEX.test(value) ? t('invalidEmail') : '');
   }
 
-  // A diferencia del email, acá también se bloquea activamente escribir
-  // más dígitos de los que el país seleccionado puede tener — no solo se
-  // avisa después. `validatePhoneNumberLength` conoce el largo real de
-  // cada plan de numeración (no es un maxLength fijo: varía por país).
+  // `validatePhoneNumberLength` conoce el largo real de cada plan de
+  // numeración (no es un maxLength fijo: varía por país) y puede devolver
+  // 'TOO_SHORT' | 'TOO_LONG' | 'INVALID_LENGTH' | undefined (válido).
+  // 'INVALID_LENGTH' NO se trata como error acá a propósito: significa "este
+  // largo puntual no corresponde a ningún formato conocido", pero en varios
+  // países eso deja huecos en el medio del rango válido (ej. Guatemala: 8 y
+  // 11 dígitos son válidos, pero 9-10 caen en ese hueco) — si se marcara
+  // como inválido, el campo parpadeaba entre "inválido" y "válido" mientras
+  // la persona sigue tecleando un número real. Solo se avisa cuando es
+  // inequívocamente corto o largo.
+  function isPhoneLengthError(digits: string, country: LibPhoneCountryCode): boolean {
+    const result = validatePhoneNumberLength(digits, country);
+    return result === 'TOO_SHORT' || result === 'TOO_LONG';
+  }
+
   function handlePhoneChange(e: ChangeEvent<HTMLInputElement>) {
     let digits = e.target.value.replace(/\D/g, '');
     const country = selectedCountry.iso2 as LibPhoneCountryCode;
@@ -222,16 +238,14 @@ export function InquiryModal({ villa, onClose }: { villa: ModalVilla; onClose: (
     }
     setPhoneNumber(digits);
     if (phoneTouched) {
-      setPhoneError(digits && validatePhoneNumberLength(digits, country) ? t('invalidPhone') : '');
+      setPhoneError(digits && isPhoneLengthError(digits, country) ? t('invalidPhone') : '');
     }
   }
 
   function handlePhoneBlur() {
     setPhoneTouched(true);
     const country = selectedCountry.iso2 as LibPhoneCountryCode;
-    setPhoneError(
-      phoneNumber && validatePhoneNumberLength(phoneNumber, country) ? t('invalidPhone') : '',
-    );
+    setPhoneError(phoneNumber && isPhoneLengthError(phoneNumber, country) ? t('invalidPhone') : '');
   }
 
   const nights = nightsBetween(range.start, range.end);
@@ -408,7 +422,7 @@ export function InquiryModal({ villa, onClose }: { villa: ModalVilla; onClose: (
                           setCountryIso2(iso2);
                           if (phoneTouched && phoneNumber) {
                             setPhoneError(
-                              validatePhoneNumberLength(phoneNumber, iso2 as LibPhoneCountryCode)
+                              isPhoneLengthError(phoneNumber, iso2 as LibPhoneCountryCode)
                                 ? t('invalidPhone')
                                 : '',
                             );

@@ -1,6 +1,9 @@
 import { formSchemas, type HubSpotFormType } from './schemas';
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Solo caracteres que realmente aparecen en emails reales — ver el mismo
+// comentario en InquiryModal.tsx, donde se repite esta regex del lado del
+// cliente.
+const EMAIL = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export type FormPayload = Record<string, string | number | boolean>;
@@ -23,7 +26,8 @@ export function validatePayload(type: HubSpotFormType, input: unknown) {
     if (missing) continue;
 
     if (rule.type === 'boolean') {
-      if (typeof value !== 'boolean') return { data: null, error: `El campo ${name} es inválido.` } as const;
+      if (typeof value !== 'boolean')
+        return { data: null, error: `El campo ${name} es inválido.` } as const;
       data[name] = value;
       continue;
     }
@@ -35,7 +39,10 @@ export function validatePayload(type: HubSpotFormType, input: unknown) {
     if (rule.type === 'email' && !EMAIL.test(text)) {
       return { data: null, error: 'El email no es válido.' } as const;
     }
-    if (rule.type === 'date' && (!DATE.test(text) || Number.isNaN(Date.parse(`${text}T00:00:00Z`)))) {
+    if (
+      rule.type === 'date' &&
+      (!DATE.test(text) || Number.isNaN(Date.parse(`${text}T00:00:00Z`)))
+    ) {
       return { data: null, error: `La fecha ${name} no es válida.` } as const;
     }
     if (rule.type === 'number') {
@@ -49,10 +56,7 @@ export function validatePayload(type: HubSpotFormType, input: unknown) {
     data[name] = text;
   }
 
-  if (
-    type === 'villa-wedding' &&
-    String(data.check_in_date) >= String(data.check_out_date)
-  ) {
+  if (type === 'villa-wedding' && String(data.check_in_date) >= String(data.check_out_date)) {
     return { data: null, error: 'El check-out debe ser posterior al check-in.' } as const;
   }
   return { data, error: null } as const;

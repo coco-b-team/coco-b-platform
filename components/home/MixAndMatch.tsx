@@ -3,11 +3,13 @@
 import { useTranslations } from 'next-intl';
 import { PackageCard } from './PackageCard';
 import { computeComboSpecs, formatPackagePrice } from '@/lib/villas';
+import { DiamondDivider } from '@/components/ui/DiamondDivider';
 import type { Package, Villa } from '@/lib/wp/types';
 import type { QuickViewItem } from '@/components/villas/ReadMoreButton';
 
 export function MixAndMatch({ packages, villas }: { packages: Package[]; villas: Villa[] }) {
   const t = useTranslations('mixMatch');
+  const tHome = useTranslations('home');
   // "Mix & Match" son combinaciones reales de dos villas — se filtra por
   // relatedVillas para no mostrar entradas del mismo tipo de contenido que
   // no son en realidad una combinación (ej. "Concierge Services").
@@ -17,7 +19,9 @@ export function MixAndMatch({ packages, villas }: { packages: Package[]; villas:
       const relatedVillas = villas.filter((v) => pkg.relatedVillas.includes(v.id));
       // Una foto de cada villa combinada, lado a lado, en vez de la imagen
       // del paquete en sí — refuerza que son las dos villas juntas.
-      const images = relatedVillas.map((v) => v.mainImage).filter((url): url is string => Boolean(url));
+      const images = relatedVillas
+        .map((v) => v.mainImage)
+        .filter((url): url is string => Boolean(url));
       // Para la ficha rápida sí conviene la galería completa de ambas villas,
       // no solo la portada de cada una.
       const galleryImages = relatedVillas
@@ -36,7 +40,11 @@ export function MixAndMatch({ packages, villas }: { packages: Package[]; villas:
     images: combo.galleryImages,
     price: formatPackagePrice(combo.startingPrice),
     description: combo.longDescription || combo.shortDescription,
-    specs: { guestCapacity: combo.guestCapacity, bedrooms: combo.bedrooms, bathrooms: combo.bathrooms },
+    specs: {
+      guestCapacity: combo.guestCapacity,
+      bedrooms: combo.bedrooms,
+      bathrooms: combo.bathrooms,
+    },
     villaBooking: {
       id: `package-${combo.slug}`,
       mainImage: combo.mainImage,
@@ -51,12 +59,24 @@ export function MixAndMatch({ packages, villas }: { packages: Package[]; villas:
   return (
     <section id="mix-match" className="mx-auto max-w-6xl scroll-mt-20 px-6 py-16 sm:px-10">
       <div className="sm:text-center">
-        <h2 className="font-body text-2xl font-normal">{t('heading')}</h2>
-        <p className="mt-4 max-w-2xl text-text-muted sm:mx-auto">{t('description')}</p>
+        <p className="text-primary text-xs font-semibold tracking-[0.3em] uppercase">
+          {tHome('mixMatchEyebrow')}
+        </p>
+        <h2 className="font-body mt-3 text-3xl font-light sm:text-4xl">{t('heading')}</h2>
+        <div className="mt-5 flex sm:justify-center">
+          <DiamondDivider />
+        </div>
+        <p className="text-text-muted mt-6 max-w-2xl sm:mx-auto">{t('description')}</p>
       </div>
       <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
         {combos.map((pkg, i) => (
-          <PackageCard key={pkg.id} pkg={pkg} images={pkg.images} quickViewItems={quickViewItems} quickViewIndex={i} />
+          <PackageCard
+            key={pkg.id}
+            pkg={pkg}
+            images={pkg.images}
+            quickViewItems={quickViewItems}
+            quickViewIndex={i}
+          />
         ))}
       </div>
     </section>
