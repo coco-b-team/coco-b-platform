@@ -116,6 +116,7 @@
   "dateRangePicker": {
     "checkInDate": "Fecha de check-in",
     "checkOutDate": "Fecha de check-out",
+    "minStayNotice": "Estadía mínima de {count} noches",
     "previousMonth": "Mes anterior",
     "nextMonth": "Mes siguiente",
     "flexibleDates": "¿Fechas flexibles?",
@@ -170,6 +171,10 @@
     "heading": "Mix & Match",
     "description": "Combina dos villas contiguas para grupos más grandes. Cada combinación te da el doble de espacio, dos piscinas y un tramo compartido de playa privada.",
     "combinedPackage": "Paquete combinado"
+  },
+  "home": {
+    "villasEyebrow": "Nuestra colección",
+    "mixMatchEyebrow": "Combina y ahorra"
   },
   "villas": {
     "pageTitle": "Nuestras Villas",

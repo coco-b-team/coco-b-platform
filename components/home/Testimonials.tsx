@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { FaChevronLeft, FaChevronRight, FaStar } from 'react-icons/fa6';
+import { DiamondDivider } from '@/components/ui/DiamondDivider';
 import type { Testimonial } from '@/lib/wp/types';
 
 // Desktop (≥1024px): 3 tarjetas. Tablet (≥640px): 2. Mobile: 1.
@@ -37,25 +38,27 @@ function ReviewCard({ testimonial }: { testimonial: Testimonial }) {
     `https://api.dicebear.com/9.x/avataaars/png?seed=${encodeURIComponent(testimonial.authorDetail)}&size=96`;
 
   return (
-    <div className="flex-1 rounded-2xl bg-background p-8 shadow-sm">
+    <div className="bg-background flex-1 rounded-2xl p-8 shadow-sm">
       <div className="flex items-center gap-3">
         <Image
           src={avatarSrc}
           alt=""
           width={48}
           height={48}
-          className="h-12 w-12 shrink-0 rounded-full bg-background-tint object-cover"
+          className="bg-background-tint h-12 w-12 shrink-0 rounded-full object-cover"
         />
         <div>
           <p className="font-semibold">{testimonial.authorDetail}</p>
-          {testimonial.reviewDate && <p className="text-sm text-text-muted">{testimonial.reviewDate}</p>}
+          {testimonial.reviewDate && (
+            <p className="text-text-muted text-sm">{testimonial.reviewDate}</p>
+          )}
         </div>
       </div>
 
       <p className="mt-6">&quot;{testimonial.quote}&quot;</p>
 
       <div
-        className="mt-6 flex justify-end gap-1 text-primary"
+        className="text-primary mt-6 flex justify-end gap-1"
         role="img"
         aria-label={`Calificación: ${rating} de 5 estrellas`}
       >
@@ -89,14 +92,20 @@ export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) 
   return (
     <section className="bg-background-alt py-16">
       <div className="mx-auto max-w-6xl px-6 text-center sm:px-10">
-        <h2 className="font-body text-2xl font-semibold tracking-wide uppercase">{heading}</h2>
+        <p className="text-primary text-xs font-semibold tracking-[0.3em] uppercase">
+          Guest Experiences
+        </p>
+        <h2 className="font-body mt-3 text-3xl font-light sm:text-4xl">{heading}</h2>
+        <div className="mt-5 flex justify-center">
+          <DiamondDivider />
+        </div>
 
-        <div className="mt-8 flex items-center gap-4">
+        <div className="mt-10 flex items-center gap-4">
           {canNavigate && (
             <button
               onClick={() => go(-1)}
               aria-label="Reseña anterior"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-text-muted shadow-sm hover:text-text"
+              className="bg-background text-text-muted hover:text-text flex h-9 w-9 shrink-0 items-center justify-center rounded-full shadow-sm"
             >
               <FaChevronLeft size={14} />
             </button>
@@ -112,7 +121,7 @@ export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) 
             <button
               onClick={() => go(1)}
               aria-label="Siguiente reseña"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-text-muted shadow-sm hover:text-text"
+              className="bg-background text-text-muted hover:text-text flex h-9 w-9 shrink-0 items-center justify-center rounded-full shadow-sm"
             >
               <FaChevronRight size={14} />
             </button>

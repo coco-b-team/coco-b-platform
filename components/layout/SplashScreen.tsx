@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Logo } from '@/components/ui/Logo';
+import { DiamondDivider } from '@/components/ui/DiamondDivider';
 import { useBodyScrollLock } from '@/lib/hooks/useBodyScrollLock';
 
 // Se muestra desde el primer render (sin esperar a un efecto), tanto en
@@ -82,29 +83,6 @@ function SplashOrnament() {
       <CornerMotif x={740} y={60} flipX />
       <CornerMotif x={60} y={740} flipY />
       <CornerMotif x={740} y={740} flipX flipY />
-    </svg>
-  );
-}
-
-// Separador chico entre el logo y el texto — una línea fina con un
-// diamante al centro, el mismo recurso editorial que usan las marcas de
-// hospitalidad de lujo para un detalle discreto sin ser decorativo de más.
-function DiamondDivider() {
-  return (
-    <svg width="120" height="12" viewBox="0 0 120 12" className="text-accent" aria-hidden="true">
-      <line x1="0" y1="6" x2="48" y2="6" stroke="currentColor" strokeWidth="1" opacity={0.5} />
-      <rect
-        x="55"
-        y="1"
-        width="10"
-        height="10"
-        transform="rotate(45 60 6)"
-        stroke="currentColor"
-        strokeWidth="1"
-        fill="none"
-        opacity={0.7}
-      />
-      <line x1="72" y1="6" x2="120" y2="6" stroke="currentColor" strokeWidth="1" opacity={0.5} />
     </svg>
   );
 }

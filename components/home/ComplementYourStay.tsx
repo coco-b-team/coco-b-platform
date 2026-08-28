@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { getServices } from '@/lib/wp/client';
+import { DiamondDivider } from '@/components/ui/DiamondDivider';
 import type { Service } from '@/lib/wp/types';
 
 const ICONS: Record<string, string> = {
@@ -27,15 +28,19 @@ export async function ComplementYourStay() {
   const services = fetched.length > 0 ? fetched : FALLBACK_SERVICES;
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-16 sm:px-10 text-center">
-      <h2 className="font-body text-2xl font-normal">Complement Your Stay</h2>
-      <p className="mt-4 mx-auto max-w-2xl text-text-muted">
+    <section className="mx-auto max-w-6xl px-6 py-16 text-center sm:px-10">
+      <p className="text-primary text-xs font-semibold tracking-[0.3em] uppercase">Amenities</p>
+      <h2 className="font-body mt-3 text-3xl font-light sm:text-4xl">Complement Your Stay</h2>
+      <div className="mt-5 flex justify-center">
+        <DiamondDivider />
+      </div>
+      <p className="text-text-muted mx-auto mt-6 max-w-2xl">
         We have some extra services to make your time with us more comfortable.
       </p>
       <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
         {services.map((service) => (
           <div key={service.id} className="flex flex-col items-center gap-3 text-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-background-tint">
+            <span className="bg-background-tint flex h-16 w-16 items-center justify-center rounded-full">
               <Image src={ICONS[service.icon] ?? '/icons/star.svg'} alt="" width={24} height={24} />
             </span>
             <p className="text-sm tracking-wide uppercase">{service.label}</p>

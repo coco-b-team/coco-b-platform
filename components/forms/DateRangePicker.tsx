@@ -38,6 +38,17 @@ function addMonths(date: Date, months: number) {
   return new Date(date.getFullYear(), date.getMonth() + months, 1);
 }
 
+// Estadía mínima de 3 noches — política del hotel, pareja para todas las
+// villas y paquetes (el campo por villa en WordPress existe pero está
+// cargado de forma inconsistente hoy: 1 noche en algunas, sin definir en
+// otras). Se aplica acá, en el único lugar donde vive el calendario de
+// reserva, en vez de depender de ese dato.
+const MIN_NIGHTS = 3;
+
+function addDays(date: Date, days: number) {
+  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+}
+
 // No hay un PMS real conectado (Sirvoy quedó fuera del alcance de este
 // hackathon) — "pendiente" son noches con una *solicitud* encima, todavía
 // sin revisar por el equipo; "confirmada" es una solicitud que alguien
@@ -131,7 +142,16 @@ function MonthGrid({
           const isPast = date < today;
           const isPending = pending.has(iso);
           const isConfirmed = confirmed.has(iso);
-          const isDisabled = isPast || isPending || isConfirmed;
+          // Al elegir la fecha de salida, las noches entre la entrada y la
+          // estadía mínima no son un check-out válido — se deshabilitan
+          // igual que un día ya reservado, no solo se ignora el click.
+          const isBelowMinStay = Boolean(
+            range.start &&
+            !range.end &&
+            date > range.start &&
+            date < addDays(range.start, MIN_NIGHTS),
+          );
+          const isDisabled = isPast || isPending || isConfirmed || isBelowMinStay;
           const isStart = range.start ? iso === toISO(range.start) : false;
           const isEnd = range.end ? iso === toISO(range.end) : false;
           const inSpan = range.start && range.end && date >= range.start && date <= range.end;
@@ -161,7 +181,7 @@ function MonthGrid({
                       ? 'bg-border/60 text-text-muted cursor-not-allowed'
                       : isPending
                         ? 'bg-accent/40 text-text cursor-not-allowed'
-                        : isPast
+                        : isPast || isBelowMinStay
                           ? 'text-text-muted/40 cursor-not-allowed'
                           : 'text-text hover:bg-background-alt'
                 }`}
@@ -285,6 +305,7 @@ export function DateRangePicker({
       <p className="text-text text-sm font-medium">
         {range.start && !range.end ? t('checkOutDate') : t('checkInDate')}
       </p>
+      <p className="text-text-muted mt-1 text-xs">{t('minStayNotice', { count: MIN_NIGHTS })}</p>
 
       <div className="border-border mt-3 rounded-xl border p-5">
         <div className="flex items-center justify-between">

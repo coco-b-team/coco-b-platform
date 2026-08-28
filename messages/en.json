@@ -116,6 +116,7 @@
   "dateRangePicker": {
     "checkInDate": "Check-in date",
     "checkOutDate": "Check-out date",
+    "minStayNotice": "{count, plural, one {# night minimum stay} other {# nights minimum stay}}",
     "previousMonth": "Previous month",
     "nextMonth": "Next month",
     "flexibleDates": "Flexible dates?",
@@ -170,6 +171,10 @@
     "heading": "Mix & Match",
     "description": "Pair two side-by-side villas for larger groups. Each combination gives you double the space, two pools, and a seamlessly shared stretch of private beachfront.",
     "combinedPackage": "Combined Package"
+  },
+  "home": {
+    "villasEyebrow": "Our Collection",
+    "mixMatchEyebrow": "Combine & Save"
   },
   "villas": {
     "pageTitle": "Our Villas",
