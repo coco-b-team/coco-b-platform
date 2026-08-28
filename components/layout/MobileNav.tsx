@@ -7,6 +7,8 @@ import { FaBars, FaXmark } from 'react-icons/fa6';
 import { useTranslations } from 'next-intl';
 import { Logo } from '@/components/ui/Logo';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { StaffLoginModal } from '@/components/admin/StaffLoginModal';
+import { useBodyScrollLock } from '@/lib/hooks/useBodyScrollLock';
 import { NAV_LINKS } from '@/lib/navLinks';
 
 // Menú hamburguesa para mobile/tablet — el sitio no tiene navegación
@@ -16,31 +18,26 @@ import { NAV_LINKS } from '@/lib/navLinks';
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [staffModalOpen, setStaffModalOpen] = useState(false);
   const t = useTranslations('nav');
+
+  // Compartido con el resto de los overlays del sitio (modales, splash,
+  // chat) — antes este menú bloqueaba el scroll a mano por su cuenta, y
+  // si se cerraba justo cuando se abría otro overlay encima (ej. el login
+  // del panel desde "Staff"), uno podía pisar el estado del otro y dejar
+  // el scroll trabado en la página siguiente.
+  useBodyScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
 
     const raf = requestAnimationFrame(() => setVisible(true));
 
-    // Compensar el ancho de la scrollbar al bloquear el scroll del body,
-    // mismo motivo que en la ficha rápida de villas (ReadMoreButton): sin
-    // esto, el contenido del home se corre al abrir/cerrar el menú.
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    const previousOverflow = document.body.style.overflow;
-    const previousPaddingRight = document.body.style.paddingRight;
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
     const onKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && handleClose();
     document.addEventListener('keydown', onKeyDown);
 
     return () => {
       cancelAnimationFrame(raf);
-      document.body.style.overflow = previousOverflow;
-      document.body.style.paddingRight = previousPaddingRight;
       document.removeEventListener('keydown', onKeyDown);
     };
   }, [open]);
@@ -93,19 +90,35 @@ export function MobileNav() {
               </div>
 
               <nav className="mt-8 flex flex-1 flex-col px-8">
-                {NAV_LINKS.map((link, i) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={handleClose}
-                    className="group border-border flex items-baseline gap-4 border-t py-5 first:border-t-0"
-                  >
-                    <span className="text-accent text-xs tracking-widest">0{i + 1}</span>
-                    <span className="font-body text-text group-hover:text-primary text-lg font-normal tracking-wide">
-                      {t(link.key)}
-                    </span>
-                  </Link>
-                ))}
+                {NAV_LINKS.map((link, i) =>
+                  link.key === 'staff' ? (
+                    <button
+                      key={link.href}
+                      onClick={() => {
+                        handleClose();
+                        setStaffModalOpen(true);
+                      }}
+                      className="group border-border flex items-baseline gap-4 border-t py-5 text-left first:border-t-0"
+                    >
+                      <span className="text-accent text-xs tracking-widest">0{i + 1}</span>
+                      <span className="font-body text-text group-hover:text-primary text-lg font-normal tracking-wide">
+                        {t(link.key)}
+                      </span>
+                    </button>
+                  ) : (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={handleClose}
+                      className="group border-border flex items-baseline gap-4 border-t py-5 first:border-t-0"
+                    >
+                      <span className="text-accent text-xs tracking-widest">0{i + 1}</span>
+                      <span className="font-body text-text group-hover:text-primary text-lg font-normal tracking-wide">
+                        {t(link.key)}
+                      </span>
+                    </Link>
+                  ),
+                )}
               </nav>
 
               <div className="border-border border-t px-8 py-6">
@@ -123,6 +136,8 @@ export function MobileNav() {
           </div>,
           document.body,
         )}
+
+      {staffModalOpen && <StaffLoginModal onClose={() => setStaffModalOpen(false)} />}
     </>
   );
 }

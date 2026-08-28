@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Logo } from '@/components/ui/Logo';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { StaffLoginModal } from '@/components/admin/StaffLoginModal';
 import { NAV_LINKS } from '@/lib/navLinks';
 
 // "Pegado" arriba mientras se navega (sticky), con una sombra sutil que
@@ -27,6 +28,7 @@ function useScrolled() {
 export function Header() {
   const scrolled = useScrolled();
   const t = useTranslations('nav');
+  const [staffModalOpen, setStaffModalOpen] = useState(false);
 
   return (
     // Envoltorio `sticky` de ancho completo — reserva su lugar en el flujo
@@ -75,22 +77,35 @@ export function Header() {
           </Link>
 
           <nav className="hidden items-center gap-10 lg:flex">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="group text-text hover:text-primary relative py-1 text-sm font-medium tracking-widest uppercase transition-colors"
-              >
-                {t(link.key)}
-                <span className="bg-primary absolute bottom-0 left-0 h-px w-0 transition-all duration-300 ease-out group-hover:w-full" />
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) =>
+              link.key === 'staff' ? (
+                <button
+                  key={link.href}
+                  onClick={() => setStaffModalOpen(true)}
+                  className="group text-text hover:text-primary relative py-1 text-sm font-medium tracking-widest uppercase transition-colors"
+                >
+                  {t(link.key)}
+                  <span className="bg-primary absolute bottom-0 left-0 h-px w-0 transition-all duration-300 ease-out group-hover:w-full" />
+                </button>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="group text-text hover:text-primary relative py-1 text-sm font-medium tracking-widest uppercase transition-colors"
+                >
+                  {t(link.key)}
+                  <span className="bg-primary absolute bottom-0 left-0 h-px w-0 transition-all duration-300 ease-out group-hover:w-full" />
+                </Link>
+              ),
+            )}
             <LanguageSwitcher />
           </nav>
 
           <MobileNav />
         </div>
       </div>
+
+      {staffModalOpen && <StaffLoginModal onClose={() => setStaffModalOpen(false)} />}
     </header>
   );
 }

@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type FocusEvent } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
+import {
+  validatePhoneNumberLength,
+  type CountryCode as LibPhoneCountryCode,
+} from 'libphonenumber-js';
 import { FaXmark, FaCheck, FaCalendarDays, FaUsers } from 'react-icons/fa6';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -47,6 +51,11 @@ type ModalVilla = {
 };
 
 type Step = 'intro' | 'dates' | 'details' | 'success';
+
+// Mismo patrón que lib/hubspot/validate.ts del lado del servidor — se
+// repite acá (en vez de importarlo) porque ese módulo no está pensado
+// para el cliente, y es una regex chica y estable.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Cuánto se muestra la transición de carga antes de pasar al paso 1 — lo
 // suficiente para sentirse intencional, sin llegar a frenar a alguien que
@@ -137,6 +146,10 @@ export function InquiryModal({ villa, onClose }: { villa: ModalVilla; onClose: (
   const [countryIso2, setCountryIso2] = useState('US');
   const [phoneNumber, setPhoneNumber] = useState('');
   const selectedCountry = COUNTRY_CODES.find((c) => c.iso2 === countryIso2) ?? COUNTRY_CODES[0];
+  const [emailError, setEmailError] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const [phoneTouched, setPhoneTouched] = useState(false);
   const exitingRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -175,6 +188,50 @@ export function InquiryModal({ villa, onClose }: { villa: ModalVilla; onClose: (
     exitingRef.current = true;
     setVisible(false);
     setTimeout(onClose, 250);
+  }
+
+  // Recién muestra el error de formato una vez que la persona salió del
+  // campo una vez (blur) o ya intentó enviar — no antes, para no marcar
+  // "inválido" mientras todavía está escribiendo la primera vez. Una vez
+  // mostrado, sí se actualiza en cada tecla (por eso el chequeo de
+  // `emailTouched` también corre en el onChange).
+  function handleEmailChange(e: ChangeEvent<HTMLInputElement>) {
+    if (!emailTouched) return;
+    const value = e.target.value.trim();
+    setEmailError(value && !EMAIL_REGEX.test(value) ? t('invalidEmail') : '');
+  }
+
+  function handleEmailBlur(e: FocusEvent<HTMLInputElement>) {
+    setEmailTouched(true);
+    const value = e.target.value.trim();
+    setEmailError(value && !EMAIL_REGEX.test(value) ? t('invalidEmail') : '');
+  }
+
+  // A diferencia del email, acá también se bloquea activamente escribir
+  // más dígitos de los que el país seleccionado puede tener — no solo se
+  // avisa después. `validatePhoneNumberLength` conoce el largo real de
+  // cada plan de numeración (no es un maxLength fijo: varía por país).
+  function handlePhoneChange(e: ChangeEvent<HTMLInputElement>) {
+    let digits = e.target.value.replace(/\D/g, '');
+    const country = selectedCountry.iso2 as LibPhoneCountryCode;
+    // Recorta desde el final en vez de solo bloquear la última tecla — así
+    // también funciona bien si el número llega pegado (paste) de una vez,
+    // no solo tecleado dígito a dígito.
+    while (digits.length > 0 && validatePhoneNumberLength(digits, country) === 'TOO_LONG') {
+      digits = digits.slice(0, -1);
+    }
+    setPhoneNumber(digits);
+    if (phoneTouched) {
+      setPhoneError(digits && validatePhoneNumberLength(digits, country) ? t('invalidPhone') : '');
+    }
+  }
+
+  function handlePhoneBlur() {
+    setPhoneTouched(true);
+    const country = selectedCountry.iso2 as LibPhoneCountryCode;
+    setPhoneError(
+      phoneNumber && validatePhoneNumberLength(phoneNumber, country) ? t('invalidPhone') : '',
+    );
   }
 
   const nights = nightsBetween(range.start, range.end);
@@ -331,24 +388,47 @@ export function InquiryModal({ villa, onClose }: { villa: ModalVilla; onClose: (
 
                   <Input label={t('firstName')} name="first_name" required maxLength={100} />
                   <Input label={t('lastName')} name="last_name" required maxLength={100} />
-                  <Input label={t('email')} name="email" type="email" required maxLength={254} />
+                  <Input
+                    label={t('email')}
+                    name="email"
+                    type="email"
+                    required
+                    maxLength={254}
+                    error={emailError}
+                    onChange={handleEmailChange}
+                    onBlur={handleEmailBlur}
+                  />
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-text text-sm font-medium">{t('phoneNumber')}</label>
                     <div className="flex gap-2">
                       <CountryCodeSelect
                         value={countryIso2}
-                        onChange={setCountryIso2}
+                        onChange={(iso2) => {
+                          setCountryIso2(iso2);
+                          if (phoneTouched && phoneNumber) {
+                            setPhoneError(
+                              validatePhoneNumberLength(phoneNumber, iso2 as LibPhoneCountryCode)
+                                ? t('invalidPhone')
+                                : '',
+                            );
+                          }
+                        }}
                         ariaLabel={t('countryCodeAriaLabel')}
                       />
                       <input
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        onChange={handlePhoneChange}
+                        onBlur={handlePhoneBlur}
                         placeholder={t('phonePlaceholder')}
                         required
-                        className="border-border text-text placeholder:text-text-muted focus:border-primary flex-1 rounded-lg border px-4 py-2.5 focus:outline-none"
+                        aria-invalid={Boolean(phoneError)}
+                        className={`text-text placeholder:text-text-muted focus:border-primary flex-1 rounded-lg border px-4 py-2.5 focus:outline-none ${
+                          phoneError ? 'border-error' : 'border-border'
+                        }`}
                       />
                     </div>
+                    {phoneError && <p className="text-error text-sm">{phoneError}</p>}
                     <input
                       type="hidden"
                       name="phone"
@@ -375,7 +455,7 @@ export function InquiryModal({ villa, onClose }: { villa: ModalVilla; onClose: (
                   </label>
 
                   <TextArea label={t('message')} name="message" />
-                  <Checkbox name="sms_consent" label={t('smsConsent')} required />
+                  <Checkbox name="sms_consent" label={t('smsConsent')} />
                 </div>
               </BaseHubSpotForm>
             )}

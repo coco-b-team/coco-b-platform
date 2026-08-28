@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBookedDates } from '@/lib/wp/availability';
+import { getAvailability } from '@/lib/wp/availability';
 
 type RouteContext = { params: Promise<{ villaKey: string }> };
 
@@ -14,10 +14,10 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
   }
 
   try {
-    const bookedDates = await getBookedDates(villaKey);
-    return NextResponse.json({ bookedDates });
+    const availability = await getAvailability(villaKey);
+    return NextResponse.json(availability);
   } catch (error) {
     console.error('[availability] error al leer fechas ocupadas', error);
-    return NextResponse.json({ bookedDates: [] });
+    return NextResponse.json({ pendingDates: [], confirmedDates: [] });
   }
 }

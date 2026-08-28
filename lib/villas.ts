@@ -4,7 +4,10 @@ import type { Villa } from '@/lib/wp/types';
 // mientras tanto, se estima a partir de las habitaciones (2 huéspedes por
 // habitación). Compartido entre VillaSpecs y el cálculo de paquetes
 // combinados, para no tener la misma fórmula en dos lugares.
-export function estimateGuestCapacity(guestCapacity: number | null, bedrooms: number | null): number | null {
+export function estimateGuestCapacity(
+  guestCapacity: number | null,
+  bedrooms: number | null,
+): number | null {
   return guestCapacity ?? (bedrooms ? bedrooms * 2 : null);
 }
 
@@ -59,6 +62,22 @@ export function findMentionedVilla(text: string, villas: Villa[]): Villa | null 
   });
   const uniqueIds = new Set(matches.map((v) => v.id));
   return uniqueIds.size === 1 ? matches[0] : null;
+}
+
+// Todas las noches entre check-in (incluido) y check-out (excluido) — el
+// día de check-out no cuenta como noche ocupada. Compartido entre el
+// cálculo de disponibilidad del servidor (lib/wp/availability.ts) y el
+// panel de admin (AdminDashboard.tsx), que antes tenían cada uno su propia
+// copia idéntica de esta misma función.
+export function nightsInRange(checkIn: string, checkOut: string): string[] {
+  const nights: string[] = [];
+  let cursor = new Date(`${checkIn}T00:00:00Z`);
+  const end = new Date(`${checkOut}T00:00:00Z`);
+  while (cursor < end) {
+    nights.push(cursor.toISOString().slice(0, 10));
+    cursor = new Date(cursor.getTime() + 24 * 60 * 60 * 1000);
+  }
+  return nights;
 }
 
 // Las cifras de un paquete combinado se calculan en vivo a partir del dato

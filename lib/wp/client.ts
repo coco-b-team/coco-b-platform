@@ -34,7 +34,7 @@ import type {
   WPAboutAcf,
 } from './types';
 
-async function wpFetch<T>(path: string): Promise<T | null> {
+async function wpFetch<T>(path: string, revalidateSeconds = 15): Promise<T | null> {
   try {
     const res = await fetch(`${WORDPRESS_API_URL}${path}`, {
       // 15 segundos — bajado de 180 (2026-08-27) para que los cambios en
@@ -45,7 +45,7 @@ async function wpFetch<T>(path: string): Promise<T | null> {
       // Ver Progreso_Proyecto.md para la alternativa que se evaluó
       // (endpoint de revalidación bajo demanda) si esto llegara a no
       // alcanzar más adelante.
-      next: { revalidate: 15 },
+      next: { revalidate: revalidateSeconds },
     });
     if (!res.ok) {
       console.error(`[wp] ${path} respondió ${res.status}`);
@@ -58,10 +58,23 @@ async function wpFetch<T>(path: string): Promise<T | null> {
   }
 }
 
-async function resolveMediaUrl(id: number | null): Promise<string | null> {
-  if (!id) return null;
-  const media = await wpFetch<{ source_url: string }>(`/wp/v2/media/${id}`);
-  return media?.source_url ?? null;
+// Resuelve varios IDs de media en UNA sola llamada (`?include=1,2,3`) en vez
+// de una por foto — antes cada villa/paquete disparaba hasta ~10 pedidos de
+// imagen en paralelo, y apenas vencía el caché compartido de 15s, esa
+// ráfaga completa (multiplicada por cada villa) golpeaba al VPS de
+// WordPress a la vez, suficiente para saturar sus workers de PHP y hacer
+// que el fetch del lado del cliente reventara con timeout. Agrupando en un
+// solo pedido por lista, la ventana de caché puede quedarse en 15s (misma
+// frescura que el resto del contenido) sin reintroducir la ráfaga.
+async function resolveMediaUrls(ids: (number | null | undefined)[]): Promise<Map<number, string>> {
+  const uniqueIds = [...new Set(ids.filter((id): id is number => Boolean(id)))];
+  if (uniqueIds.length === 0) return new Map();
+  const media = await wpFetch<{ id: number; source_url: string }[]>(
+    `/wp/v2/media?include=${uniqueIds.join(',')}&per_page=100`,
+  );
+  const map = new Map<number, string>();
+  media?.forEach((m) => map.set(m.id, m.source_url));
+  return map;
 }
 
 function toNumberOrNull(value: number | string | undefined): number | null {
@@ -74,9 +87,8 @@ function title(post: WPPost<unknown>): string {
   return decodeHtmlEntities(post.title.rendered);
 }
 
-async function mapVilla(post: WPPost<WPVillaAcf>): Promise<Villa> {
-  const acf = post.acf;
-  const galleryIds = [
+function villaGalleryIds(acf: WPVillaAcf): number[] {
+  return [
     acf.gallery_image_1,
     acf.gallery_image_2,
     acf.gallery_image_3,
@@ -88,11 +100,12 @@ async function mapVilla(post: WPPost<WPVillaAcf>): Promise<Villa> {
     acf.gallery_image_9,
     acf.gallery_image_10,
   ].filter((id): id is number => Boolean(id));
+}
 
-  const [mainImage, rawGallery] = await Promise.all([
-    resolveMediaUrl(acf.main_image),
-    Promise.all(galleryIds.map(resolveMediaUrl)),
-  ]);
+function mapVilla(post: WPPost<WPVillaAcf>, media: Map<number, string>): Villa {
+  const acf = post.acf;
+  const mainImage = acf.main_image ? (media.get(acf.main_image) ?? null) : null;
+  const rawGallery = villaGalleryIds(acf).map((id) => media.get(id) ?? null);
 
   // Algunas villas tienen la misma foto cargada como imagen principal y
   // como parte de la galería — se deduplica acá, una sola vez, en vez de
@@ -128,9 +141,9 @@ async function mapVilla(post: WPPost<WPVillaAcf>): Promise<Villa> {
   };
 }
 
-async function mapRetreat(post: WPPost<WPRetreatAcf>): Promise<Retreat> {
+function mapRetreat(post: WPPost<WPRetreatAcf>, media: Map<number, string>): Retreat {
   const acf = post.acf;
-  const mainImage = await resolveMediaUrl(acf.main_image);
+  const mainImage = acf.main_image ? (media.get(acf.main_image) ?? null) : null;
 
   return {
     id: post.id,
@@ -157,9 +170,9 @@ async function mapRetreat(post: WPPost<WPRetreatAcf>): Promise<Retreat> {
   };
 }
 
-async function mapPackage(post: WPPost<WPPackageAcf>): Promise<Package> {
+function mapPackage(post: WPPost<WPPackageAcf>, media: Map<number, string>): Package {
   const acf = post.acf;
-  const mainImage = await resolveMediaUrl(acf.main_image);
+  const mainImage = acf.main_image ? (media.get(acf.main_image) ?? null) : null;
 
   return {
     id: post.id,
@@ -184,9 +197,9 @@ async function mapPackage(post: WPPost<WPPackageAcf>): Promise<Package> {
   };
 }
 
-async function mapTestimonial(post: WPPost<WPTestimonialAcf>): Promise<Testimonial> {
+function mapTestimonial(post: WPPost<WPTestimonialAcf>, media: Map<number, string>): Testimonial {
   const acf = post.acf;
-  const authorImage = await resolveMediaUrl(acf.author_image);
+  const authorImage = acf.author_image ? (media.get(acf.author_image) ?? null) : null;
 
   return {
     id: post.id,
@@ -223,9 +236,9 @@ function mapService(post: WPPost<WPServiceAcf>): Service {
   };
 }
 
-async function mapAward(post: WPPost<WPAwardAcf>): Promise<Award> {
+function mapAward(post: WPPost<WPAwardAcf>, media: Map<number, string>): Award {
   const acf = post.acf;
-  const logo = await resolveMediaUrl(acf.award_logo);
+  const logo = acf.award_logo ? (media.get(acf.award_logo) ?? null) : null;
   return {
     id: post.id,
     title: title(post),
@@ -345,7 +358,9 @@ export async function getVillas(): Promise<Villa[]> {
   const posts = await wpFetch<WPPost<WPVillaAcf>[]>('/wp/v2/villa?per_page=100');
   if (!posts) return [];
   const locale = await getContentLocale();
-  const villas = bySortOrder(await Promise.all(posts.map(mapVilla)));
+  const mediaIds = posts.flatMap((p) => [p.acf.main_image, ...villaGalleryIds(p.acf)]);
+  const media = await resolveMediaUrls(mediaIds);
+  const villas = bySortOrder(posts.map((p) => mapVilla(p, media)));
   return villas.map((v) => overlaySlug(v, locale, 'villa'));
 }
 
@@ -355,7 +370,9 @@ export async function getVilla(slug: string): Promise<Villa | null> {
   );
   if (!posts || posts.length === 0) return null;
   const locale = await getContentLocale();
-  return overlaySlug(await mapVilla(posts[0]), locale, 'villa');
+  const post = posts[0];
+  const media = await resolveMediaUrls([post.acf.main_image, ...villaGalleryIds(post.acf)]);
+  return overlaySlug(mapVilla(post, media), locale, 'villa');
 }
 
 export async function getVillaSummaries(): Promise<VillaSummary[]> {
@@ -389,7 +406,8 @@ export async function getVillaSummaries(): Promise<VillaSummary[]> {
 export async function getRetreats(): Promise<Retreat[]> {
   const posts = await wpFetch<WPPost<WPRetreatAcf>[]>('/wp/v2/retreat?per_page=100');
   if (!posts) return [];
-  return bySortOrder(await Promise.all(posts.map(mapRetreat)));
+  const media = await resolveMediaUrls(posts.map((p) => p.acf.main_image));
+  return bySortOrder(posts.map((p) => mapRetreat(p, media)));
 }
 
 export async function getRetreat(slug: string): Promise<Retreat | null> {
@@ -397,14 +415,16 @@ export async function getRetreat(slug: string): Promise<Retreat | null> {
     `/wp/v2/retreat?slug=${encodeURIComponent(slug)}`,
   );
   if (!posts || posts.length === 0) return null;
-  return mapRetreat(posts[0]);
+  const media = await resolveMediaUrls([posts[0].acf.main_image]);
+  return mapRetreat(posts[0], media);
 }
 
 export async function getPackages(): Promise<Package[]> {
   const posts = await wpFetch<WPPost<WPPackageAcf>[]>('/wp/v2/package?per_page=100');
   if (!posts) return [];
   const locale = await getContentLocale();
-  const packages = bySortOrder(await Promise.all(posts.map(mapPackage)));
+  const media = await resolveMediaUrls(posts.map((p) => p.acf.main_image));
+  const packages = bySortOrder(posts.map((p) => mapPackage(p, media)));
   return packages.map((p) => overlaySlug(p, locale, 'package'));
 }
 
@@ -414,14 +434,16 @@ export async function getPackage(slug: string): Promise<Package | null> {
   );
   if (!posts || posts.length === 0) return null;
   const locale = await getContentLocale();
-  return overlaySlug(await mapPackage(posts[0]), locale, 'package');
+  const media = await resolveMediaUrls([posts[0].acf.main_image]);
+  return overlaySlug(mapPackage(posts[0], media), locale, 'package');
 }
 
 export async function getTestimonials(): Promise<Testimonial[]> {
   const posts = await wpFetch<WPPost<WPTestimonialAcf>[]>('/wp/v2/testimonial?per_page=100');
   if (!posts) return [];
   const locale = await getContentLocale();
-  const testimonials = bySortOrder(await Promise.all(posts.map(mapTestimonial)));
+  const media = await resolveMediaUrls(posts.map((p) => p.acf.author_image));
+  const testimonials = bySortOrder(posts.map((p) => mapTestimonial(p, media)));
   return testimonials.map((t) => overlayId(t, locale, 'testimonial'));
 }
 
@@ -468,9 +490,8 @@ export async function getHero(): Promise<Hero> {
     acf.hero_image_4,
     acf.hero_image_5,
   ].filter((id): id is number => Boolean(id));
-  const images = (await Promise.all(imageIds.map(resolveMediaUrl))).filter((url): url is string =>
-    Boolean(url),
-  );
+  const media = await resolveMediaUrls(imageIds);
+  const images = imageIds.map((id) => media.get(id)).filter((url): url is string => Boolean(url));
 
   const locale = await getContentLocale();
   return overlaySingleton(
@@ -512,7 +533,8 @@ export async function getAwards(): Promise<Award[]> {
   const posts = await wpFetch<WPPost<WPAwardAcf>[]>('/wp/v2/award?per_page=100');
   if (!posts || posts.length === 0) return [];
   const locale = await getContentLocale();
-  const awards = bySortOrder(await Promise.all(posts.map(mapAward)));
+  const media = await resolveMediaUrls(posts.map((p) => p.acf.award_logo));
+  const awards = bySortOrder(posts.map((p) => mapAward(p, media)));
   return awards.map((a) => overlayId(a, locale, 'award'));
 }
 

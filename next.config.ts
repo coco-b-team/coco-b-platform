@@ -15,6 +15,9 @@ function wordpressHostname(): string {
 
 const nextConfig: NextConfig = {
   images: {
+    // 90 lo usa el hero (la imagen más grande y visible del sitio); el
+    // resto del sitio se queda con el 75 por defecto.
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: 'https',

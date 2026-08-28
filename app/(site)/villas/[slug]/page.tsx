@@ -49,21 +49,25 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
   const browsable = allVillas.filter((v) => v.showOnLanding);
   const currentIndex = browsable.findIndex((v) => v.slug === slug);
   const hasSiblings = currentIndex >= 0 && browsable.length > 1;
-  const prevVilla = hasSiblings ? browsable[(currentIndex - 1 + browsable.length) % browsable.length] : null;
+  const prevVilla = hasSiblings
+    ? browsable[(currentIndex - 1 + browsable.length) % browsable.length]
+    : null;
   const nextVilla = hasSiblings ? browsable[(currentIndex + 1) % browsable.length] : null;
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-16 sm:px-10">
-      <p className="text-xs tracking-widest text-text-muted uppercase">{villa.label || tCommon('villa')}</p>
+      <p className="text-text-muted text-xs tracking-widest uppercase">
+        {villa.label || tCommon('villa')}
+      </p>
       <h1 className="font-body mt-1 text-3xl font-semibold">{villa.title}</h1>
 
       <div className="mt-6">
         <VillaGallery images={images} alt={villa.title} />
       </div>
 
-      <div className="mt-8 flex flex-wrap items-baseline justify-between gap-4 border-b border-border pb-6">
+      <div className="border-border mt-8 flex flex-wrap items-baseline justify-between gap-4 border-b pb-6">
         <div>
-          <p className="text-xs tracking-widest text-text-muted uppercase">{t('startingFrom')}</p>
+          <p className="text-text-muted text-xs tracking-widest uppercase">{t('startingFrom')}</p>
           <p className="text-2xl font-semibold">
             {formatPrice(villa.startingPrice, villa.priceUnit, villa.priceOnRequest, tCommon)}
           </p>
@@ -82,29 +86,41 @@ export default async function VillaDetailPage({ params }: { params: Promise<{ sl
         />
       </div>
 
-      {(villa.guestCapacity || villa.bedrooms || villa.bathrooms || villa.minimumStayNights || villa.location) && (
-        <div className="mt-6 border-b border-border pb-6">
-          <VillaSpecs guestCapacity={villa.guestCapacity} bedrooms={villa.bedrooms} bathrooms={villa.bathrooms} />
+      {(villa.guestCapacity ||
+        villa.bedrooms ||
+        villa.bathrooms ||
+        villa.minimumStayNights ||
+        villa.location) && (
+        <div className="border-border mt-6 border-b pb-6">
+          <VillaSpecs
+            guestCapacity={villa.guestCapacity}
+            bedrooms={villa.bedrooms}
+            bathrooms={villa.bathrooms}
+          />
           {(villa.minimumStayNights || villa.location) && (
-            <div className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm tracking-wide text-text-muted uppercase">
-              {villa.minimumStayNights && <span>{t('nightMinimum', { count: villa.minimumStayNights })}</span>}
+            <div className="text-text-muted mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm tracking-wide uppercase">
+              {villa.minimumStayNights && (
+                <span>{t('nightMinimum', { count: villa.minimumStayNights })}</span>
+              )}
               {villa.location && <span className="normal-case">{villa.location}</span>}
             </div>
           )}
         </div>
       )}
 
-      <p className="mt-8 whitespace-pre-line text-text-muted">{villa.longDescription}</p>
+      <p className="text-text-muted mt-8 whitespace-pre-line">{villa.longDescription}</p>
 
       <PrevNextNav
         prev={prevVilla && { href: `/villas/${prevVilla.slug}`, title: prevVilla.title }}
         next={nextVilla && { href: `/villas/${nextVilla.slug}`, title: nextVilla.title }}
       />
 
-      <div className="mt-12 rounded-2xl bg-background-alt px-6 py-12 text-center sm:px-12">
-        <p className="text-xs tracking-widest text-text-muted uppercase">{t('planYourStay')}</p>
-        <h2 className="font-body mt-2 text-3xl font-semibold">{t('requestTitle', { name: villa.title })}</h2>
-        <p className="mx-auto mt-3 max-w-md text-text-muted">{t('shareInfo')}</p>
+      <div className="bg-background-alt mt-12 rounded-2xl px-6 py-12 text-center sm:px-12">
+        <p className="text-text-muted text-xs tracking-widest uppercase">{t('planYourStay')}</p>
+        <h2 className="font-body mt-2 text-3xl font-semibold">
+          {t('requestTitle', { name: villa.title })}
+        </h2>
+        <p className="text-text-muted mx-auto mt-3 max-w-md">{t('shareInfo')}</p>
         <div className="mt-7">
           <VillaInquireButton
             villa={{
