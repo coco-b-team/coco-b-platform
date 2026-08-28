@@ -55,11 +55,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
   if (!data) return NextResponse.json({ error }, { status: 422 });
 
   try {
-    await submitToHubSpot(formType, data, {
-      hutk: request.cookies.get('hubspotutk')?.value,
-      pageUri: typeof body.pageUri === 'string' ? body.pageUri.slice(0, 500) : undefined,
-      pageName: typeof body.pageName === 'string' ? body.pageName.slice(0, 200) : undefined,
-    });
+    await submitToHubSpot(data);
 
     try {
       await sendConfirmationEmail(formType, data);

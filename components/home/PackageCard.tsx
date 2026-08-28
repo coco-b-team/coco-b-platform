@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/Card';
 import { SplitCardImage } from '@/components/ui/SplitCardImage';
 import { ReadMoreButton, type QuickViewItem } from '@/components/villas/ReadMoreButton';
@@ -11,19 +14,27 @@ export function PackageCard({
   images,
   quickViewItems,
   quickViewIndex,
+  priority = false,
 }: {
   pkg: Package;
   images?: string[];
   quickViewItems: QuickViewItem[];
   quickViewIndex: number;
+  priority?: boolean;
 }) {
+  const t = useTranslations('mixMatch');
+
   return (
     <Card className="flex flex-col overflow-hidden">
-      <SplitCardImage images={images ?? (pkg.mainImage ? [pkg.mainImage] : [])} alt={pkg.title} />
+      <SplitCardImage
+        images={images ?? (pkg.mainImage ? [pkg.mainImage] : [])}
+        alt={pkg.title}
+        priority={priority}
+      />
       <div className="flex flex-1 flex-col gap-3 p-6">
-        <p className="text-xs tracking-widest text-text-muted uppercase">Combined Package</p>
+        <p className="text-text-muted text-xs tracking-widest uppercase">{t('combinedPackage')}</p>
         <p className="text-lg font-medium tracking-wider uppercase">{pkg.title}</p>
-        <p className="line-clamp-3 text-text-muted">{pkg.shortDescription}</p>
+        <p className="text-text-muted line-clamp-3">{pkg.shortDescription}</p>
 
         <VillaSpecs
           guestCapacity={pkg.guestCapacity}

@@ -117,6 +117,9 @@
   },
   "inquiryModal": {
     "villaEyebrow": "Villa",
+    "preparingTitle": "Preparing your experience",
+    "preparingSubtitle": "You're one step closer to your escape at {name}",
+    "guestsCount": "{count, plural, one {# guest} other {# guests}}",
     "requestSentAriaLabel": "Request sent",
     "reserveAriaLabel": "Book {name}",
     "close": "Close",

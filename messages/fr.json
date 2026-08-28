@@ -117,6 +117,9 @@
   },
   "inquiryModal": {
     "villaEyebrow": "Villa",
+    "preparingTitle": "Préparation de votre expérience",
+    "preparingSubtitle": "Vous êtes à un pas de votre évasion à {name}",
+    "guestsCount": "{count, plural, one {# invité} other {# invités}}",
     "requestSentAriaLabel": "Demande envoyée",
     "reserveAriaLabel": "Réserver {name}",
     "close": "Fermer",

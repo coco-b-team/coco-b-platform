@@ -23,7 +23,11 @@ export default async function VillasPage() {
     images: villaImages(villa),
     price: formatVillaPrice(villa),
     description: villa.longDescription || villa.shortDescription,
-    specs: { guestCapacity: villa.guestCapacity, bedrooms: villa.bedrooms, bathrooms: villa.bathrooms },
+    specs: {
+      guestCapacity: villa.guestCapacity,
+      bedrooms: villa.bedrooms,
+      bathrooms: villa.bathrooms,
+    },
     villaBooking: {
       id: villa.id,
       mainImage: villa.mainImage,
@@ -39,11 +43,17 @@ export default async function VillasPage() {
     <section className="mx-auto max-w-6xl px-6 py-16 sm:px-10">
       <h1 className="font-body text-2xl font-normal">{t('pageTitle')}</h1>
       {villas.length === 0 ? (
-        <p className="mt-8 text-text-muted">{t('empty')}</p>
+        <p className="text-text-muted mt-8">{t('empty')}</p>
       ) : (
         <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
           {villas.map((villa, i) => (
-            <VillaCard key={villa.id} villa={villa} quickViewItems={quickViewItems} quickViewIndex={i} />
+            <VillaCard
+              key={villa.id}
+              villa={villa}
+              quickViewItems={quickViewItems}
+              quickViewIndex={i}
+              priority={i < 2}
+            />
           ))}
         </div>
       )}

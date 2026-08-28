@@ -4,11 +4,22 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 
-export function CardCarousel({ images, alt }: { images: string[]; alt: string }) {
+export function CardCarousel({
+  images,
+  alt,
+  priority = false,
+}: {
+  images: string[];
+  alt: string;
+  // Solo las tarjetas de la primera fila (arriba del todo, sin scrollear)
+  // deberían pedir esto — decirle a Next que TODO es prioritario anula el
+  // sentido de priorizar nada.
+  priority?: boolean;
+}) {
   const [active, setActive] = useState(0);
 
   if (images.length === 0) {
-    return <div className="relative h-64 bg-background-alt" />;
+    return <div className="bg-background-alt relative h-64" />;
   }
 
   function go(e: React.MouseEvent, delta: number) {
@@ -18,13 +29,14 @@ export function CardCarousel({ images, alt }: { images: string[]; alt: string })
   }
 
   return (
-    <div className="group relative h-64 bg-background-alt">
+    <div className="group bg-background-alt relative h-64">
       <Image
         src={images[active]}
         alt={alt}
         fill
         sizes="(min-width: 640px) 50vw, 100vw"
         className="object-cover"
+        priority={priority}
       />
 
       {images.length > 1 && (

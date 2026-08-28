@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { Card } from '@/components/ui/Card';
 import { CardCarousel } from '@/components/ui/CardCarousel';
 import { ReadMoreButton, type QuickViewItem } from '@/components/villas/ReadMoreButton';
@@ -6,24 +7,29 @@ import { VillaSpecs } from '@/components/villas/VillaSpecs';
 import { formatVillaPrice, villaImages } from '@/lib/villas';
 import type { Villa } from '@/lib/wp/types';
 
-export function VillaCard({
+export async function VillaCard({
   villa,
   quickViewItems,
   quickViewIndex,
+  priority = false,
 }: {
   villa: Villa;
   quickViewItems: QuickViewItem[];
   quickViewIndex: number;
+  priority?: boolean;
 }) {
   const images = villaImages(villa);
+  const tCommon = await getTranslations('common');
 
   return (
     <Card className="flex flex-col overflow-hidden">
-      <CardCarousel images={images} alt={villa.title} />
+      <CardCarousel images={images} alt={villa.title} priority={priority} />
       <div className="flex flex-1 flex-col gap-3 p-6">
-        <p className="text-xs tracking-widest text-text-muted uppercase">{villa.label || 'Single Villa'}</p>
+        <p className="text-text-muted text-xs tracking-widest uppercase">
+          {villa.label || tCommon('singleVilla')}
+        </p>
         <p className="text-lg font-medium tracking-wider uppercase">{villa.title}</p>
-        <p className="line-clamp-3 text-text-muted">{villa.shortDescription}</p>
+        <p className="text-text-muted line-clamp-3">{villa.shortDescription}</p>
 
         <VillaSpecs
           guestCapacity={villa.guestCapacity}
